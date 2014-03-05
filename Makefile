@@ -3,16 +3,19 @@ CFLAGS     = -Iinclude -Os -Wall
 
 DEVICE     = atmega328p
 CLOCK      = 9830400
+UBRR       = 63
 FUSES      = -U hfuse:w:0xd9:m -U lfuse:w:0xe0:m
 PROGRAMMER = -c avrispmkii -P usb
 
 CFLAGS    += -DF_CPU=$(CLOCK)
+CFLAGS    += -DF_UBRR=$(UBRR)
 CFLAGS    += -mmcu=$(DEVICE)
 
 AVRDUDE    = avrdude $(PROGRAMMER) -p $(DEVICE)
 
-OBJECTS    = spi.o
-OBJECTS   += groom.o
+OBJECTS    = groom.o
+OBJECTS   += spi.o
+OBJECTS   += usart.o
 
 all: groom.hex
 
