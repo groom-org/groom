@@ -35,3 +35,5 @@ groom.hex: groom.elf
 	avr-objcopy -j .text -j .data -O ihex groom.elf groom.hex
 clean:
 	-rm -f *.o
+	-rm -f *.elf
+	-rm -f *.hex
