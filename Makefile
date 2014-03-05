@@ -33,6 +33,10 @@ groom.elf: $(OBJECTS)
 groom.hex: groom.elf
 	-rm -f groom.hex
 	avr-objcopy -j .text -j .data -O ihex groom.elf groom.hex
+
+disasm: groom.elf
+	avr-objdump -d groom.elf
+
 clean:
 	-rm -f *.o
 	-rm -f *.elf
