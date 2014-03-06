@@ -17,8 +17,26 @@ void spi_master_init(void)
 	SPCR = (1 << SPE) | (1 << MSTR) | (1 << SPR0);
 }
 
-/* send the character d and display the result */
-uint8_t spi_master_txn(uint8_t d)
+/*
+ * There are four options for the speed:
+ * 0: CLK/4
+ * 1: CLK/16
+ * 2: CLK/64
+ * 3: CLK/128
+ */
+void spi_master_set_speed(uint8_t s)
+{
+	s &= 0x3;
+
+	/* 
+	 * this is the lower two bits of the SPCR register, so don't
+	 * bother shifting it
+	 */
+	SPCR |= s;
+}
+
+/* send the character d and return the result */
+uint8_t spi_master_shift(uint8_t d)
 {
 	/* set the data and start transmission */
 	SPDR = d;
