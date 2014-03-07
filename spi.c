@@ -10,8 +10,10 @@
 /* we can enable spi interrupts as well */
 void spi_master_init(void)
 {
-	/* spi pins on port b MOSI SCK */
+	/* spi pins on port b MOSI SCK. Make them outputs. */
 	DDR_SPI |= ((1 << DD_MOSI) | (1 << DD_SCK));
+	/* make sure the MISO pin is an input */
+	DDR_SPI &= ~(1 << DD_MISO);
 
 	/* Enable SPI, make us Master, and set clock rate to fck/16 */
 	SPCR = (1 << SPE) | (1 << MSTR) | (1 << SPR0);
