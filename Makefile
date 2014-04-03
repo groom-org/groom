@@ -16,6 +16,7 @@ AVRDUDE    = avrdude $(PROGRAMMER) -p $(DEVICE)
 OBJECTS    = groom.o
 OBJECTS   += spi.o
 OBJECTS   += usart.o
+OBJECTS   += encoder.o
 
 all: groom.hex
 
