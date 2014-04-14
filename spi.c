@@ -1,9 +1,6 @@
 #include <avr/io.h>
 
-#define DD_MOSI 5
-#define DD_MISO 6
-#define DD_SCK 7
-#define DDR_SPI DDRB
+#include "groom/spi.h"
 
 /* see http://avrbeginners.net/architecture/spi/spi.html */
 

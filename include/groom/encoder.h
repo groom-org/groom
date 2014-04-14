@@ -10,4 +10,6 @@ void encoder_init(void);
 
 uint8_t encoder_sample(void);
 
+int16_t encoder_val(void);
+
 #endif /* GROOM_ENCODER_H_ */
