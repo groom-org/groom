@@ -61,6 +61,8 @@ int main(void)
 
 		tft_println("Type Below:\r\n");
 
+		tft_set_text_size(4);
+
 		for(;;) {
 			char c = usart_in();
 			tft_text_write(c);

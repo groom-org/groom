@@ -249,6 +249,11 @@ void tft_set_text_color(uint16_t fg, uint16_t bg)
 	text_bg = bg;
 }
 
+void tft_set_text_size(uint8_t s)
+{
+	text_size = s;
+}
+
 void tft_println(char *s)
 {
 	while (*s != '\0') {
@@ -320,7 +325,7 @@ void tft_draw_char(int16_t x, int16_t y, unsigned char c, uint16_t color, uint16
 				if (size == 1) {
 					tft_draw_pixel(x + i, y + j, text_fg);
 				} else {
-					tft_fill_rect(x + i * text_size, y + j * text_size, text_size, text_size, text_bg);
+					tft_fill_rect(x + i * text_size, y + j * text_size, text_size, text_size, text_fg);
 				}
 			}
 			line >>= 1;

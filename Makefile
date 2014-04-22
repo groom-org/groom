@@ -18,7 +18,6 @@ OBJECTS   += spi.o
 OBJECTS   += usart.o
 OBJECTS   += encoder.o
 OBJECTS   += tft.o
-OBJECTS   += dsh.o
 
 all: groom.hex
 
