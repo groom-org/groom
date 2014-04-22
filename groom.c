@@ -55,6 +55,10 @@ int main(void)
 		dsh_run(&shell);
 		*/
 
+		int number = 57;
+		tft_printf("This is my number %d\r\n", number);
+		tft_printf("This is my number in hex 0x%x\r\n", number);
+
 		tft_println("Type Below:\r\n");
 
 		for(;;) {

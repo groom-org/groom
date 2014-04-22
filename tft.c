@@ -1,3 +1,8 @@
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 #include <util/delay.h>
@@ -250,6 +255,31 @@ void tft_println(char *s)
 		tft_text_write(*s);
 		s++;
 	}
+}
+
+int tft_printf(char *format_string, ...)
+{
+	va_list varargs;
+	char *string = NULL;
+	int size;
+
+	va_start(varargs, format_string);
+	size = vsnprintf(string, 0, format_string, varargs);
+	va_end(varargs);
+
+	string = malloc(size + 1);
+	if (!string) {
+		return -1;
+	}
+
+	va_start(varargs, format_string);
+	vsnprintf(string, size + 1, format_string, varargs);
+	va_end(varargs);
+
+	tft_println(string);
+	free(string);
+
+	return 0;
 }
 
 void tft_text_write(uint8_t c)
