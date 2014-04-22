@@ -43,8 +43,12 @@ int main(void)
 		i++;
 		*/
 
-		tft_fill_rect(0, 0, 60, 60, ILI9341_RED);
-		tft_fill_rect(0, 0, 60, 60, ILI9341_BLUE);
+		tft_fill_screen(ILI9341_BLACK);
+
+		tft_set_text_color(ILI9341_WHITE, ILI9341_RED);
+		tft_println("Hello World!");
+
+		for(;;);
 	}
 
 	/* turn on interrupts */

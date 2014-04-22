@@ -1,4 +1,5 @@
 #include <avr/io.h>
+#include <avr/pgmspace.h>
 #include <util/delay.h>
 
 #include "groom/tft.h"
@@ -11,6 +12,18 @@
 #define DC_DDR DDRD
 #define DC_PORT PORTD
 #define DD_DC 7
+
+static int16_t cursor_x, cursor_y;
+static uint16_t text_fg, text_bg;
+static uint8_t text_size = 1;
+static uint8_t wrap = 1;
+
+/*
+ * it's kinda hacky to include a C file... but
+ * the Adafruit library does it, so...
+ */
+ #include "glcdfont.c"
+
 
 void tft_init(void)
 {
@@ -167,8 +180,14 @@ void tft_draw_pixel(int16_t x, int16_t y, int16_t color)
 {
 	tft_set_addr_window(x, y, x + 1, y + 1);
 
-	tft_data(color >> 8);
-	tft_data(color);
+	tft_data_on();
+	tft_begin();
+
+	spi_master_shift(color >> 8);
+	spi_master_shift(color);
+
+	tft_end();
+	tft_data_off();
 }
 
 void tft_set_addr_window(int16_t x0, int16_t y0, int16_t x1, int16_t y1)
@@ -186,6 +205,11 @@ void tft_set_addr_window(int16_t x0, int16_t y0, int16_t x1, int16_t y1)
 	tft_data(y1);     // YEND
 
 	tft_command(ILI9341_RAMWR); // write to RAM
+}
+
+void tft_fill_screen(uint16_t color)
+{
+	tft_fill_rect(0, 0, ILI9341_TFTWIDTH, ILI9341_TFTHEIGHT, color);
 }
 
 void tft_fill_rect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
@@ -206,6 +230,72 @@ void tft_fill_rect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
 
 	tft_end();
 	tft_data_off();
+}
+
+void tft_set_cursor(int16_t x, int16_t y)
+{
+	cursor_x = x;
+	cursor_y = y;
+}
+
+void tft_set_text_color(uint16_t fg, uint16_t bg)
+{
+	text_fg = fg;
+	text_bg = bg;
+}
+
+void tft_println(char *s)
+{
+	while (*s != '\0') {
+		tft_text_write(*s);
+		s++;
+	}
+}
+
+void tft_text_write(uint8_t c)
+{
+	if (c == '\n') {
+		cursor_y += text_size * 8;
+		cursor_x = 0;
+	} else if (c == '\r') {
+		//skip!
+	} else {
+		tft_draw_char(cursor_x, cursor_y, c, text_fg, text_bg, text_size);
+		cursor_x += text_size * 6;
+		if (wrap && (cursor_x > (ILI9341_TFTWIDTH - text_size * 6))) {
+			cursor_y += text_size * 8;
+			cursor_x = 0;
+		}
+	}
+}
+
+void tft_draw_char(int16_t x, int16_t y, unsigned char c, uint16_t color, uint16_t bg, uint8_t size)
+{
+	if ((x >= ILI9341_TFTWIDTH)       ||
+	    (y >= ILI9341_TFTHEIGHT)      ||
+	    ((x + 6 * text_size - 1) < 0) ||
+	    ((y + 8 * text_size - 1) < 0)) {
+		return;
+	}
+
+	for (int8_t i = 0; i < 6; i++) {
+		uint8_t line;
+		if (i == 5) {
+			line = 0x0;
+		} else {
+			line = pgm_read_byte(font + (c * 5) + i);
+		}
+		for (int8_t j = 0; j < 8; j++) {
+			if (line & 0x1) {
+				if (size == 1) {
+					tft_draw_pixel(x + i, y + j, text_fg);
+				} else {
+					tft_fill_rect(x + i * text_size, y + j * text_size, text_size, text_size, text_bg);
+				}
+			}
+			line >>= 1;
+		}
+	}
 }
 
 void tft_end(void)

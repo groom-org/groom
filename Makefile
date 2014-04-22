@@ -1,5 +1,5 @@
 AVRGCC     = avr-gcc
-CFLAGS     = -Iinclude -Os -Wall
+CFLAGS     = -Iinclude -Os -Wall -std=c99
 
 DEVICE     = atmega328p
 CLOCK      = 9830400
@@ -18,6 +18,7 @@ OBJECTS   += spi.o
 OBJECTS   += usart.o
 OBJECTS   += encoder.o
 OBJECTS   += tft.o
+OBJECTS   += glcdfont.o
 
 all: groom.hex
 
