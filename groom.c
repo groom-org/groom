@@ -18,14 +18,19 @@ int main(void)
 	/* init tft */
 	tft_init();
 
-	tft_draw_pixel(0, 0, 0);
-	tft_draw_pixel(1, 1, 0);
-	tft_draw_pixel(2, 2, 0);
-	tft_draw_pixel(3, 3, 0);
-
 	int i, j;
 
+	i = 0;
 	for(;;) {
+		/*
+		char buf[128];
+		//sprintf(buf, "sending data over spi %d\r\n", i);
+		//usart_outstring(buf);
+		spi_master_shift(0xAA);
+		//tft_begin();
+		//tft_data(0xAA);
+		//tft_end();
+		
 		for (i = 0; i < ILI9341_TFTWIDTH; i++) {
 			for (j = 0; j < ILI9341_TFTHEIGHT; j++) {
 				char buf[128];
@@ -34,6 +39,12 @@ int main(void)
 				usart_outstring(buf);
 			}
 		}
+		
+		i++;
+		*/
+
+		tft_fill_rect(0, 0, 60, 60, ILI9341_RED);
+		tft_fill_rect(0, 0, 60, 60, ILI9341_BLUE);
 	}
 
 	/* turn on interrupts */

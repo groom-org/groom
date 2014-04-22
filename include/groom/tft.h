@@ -71,6 +71,10 @@ void tft_init(void);
 
 void tft_begin(void);
 
+void tft_data_on(void);
+
+void tft_data_off(void);
+
 void tft_command(uint8_t c);
 
 void tft_data(uint8_t d);
@@ -78,6 +82,8 @@ void tft_data(uint8_t d);
 void tft_draw_pixel(int16_t x, int16_t y, int16_t color);
 
 void tft_set_addr_window(int16_t x0, int16_t y0, int16_t x1, int16_t y1);
+
+void tft_fill_rect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
 
 void tft_end(void);
 

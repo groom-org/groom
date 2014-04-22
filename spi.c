@@ -8,12 +8,14 @@
 void spi_master_init(void)
 {
 	/* spi pins on port b MOSI SCK. Make them outputs. */
-	DDR_SPI |= ((1 << DD_MOSI) | (1 << DD_SCK));
-	/* make sure the MISO pin is an input */
-	DDR_SPI &= ~(1 << DD_MISO);
+	DDR_SPI = (1 << DD_MOSI) | (1 << DD_SCK);
 
 	/* Enable SPI, make us Master, and set clock rate to fck/16 */
 	SPCR = (1 << SPE) | (1 << MSTR) | (1 << SPR0);
+
+	/* set SS as output and pull it high */
+	DDRB |= (1 << 2);
+	PORTB |= (1 << 2);
 }
 
 /*
@@ -43,5 +45,5 @@ uint8_t spi_master_shift(uint8_t d)
 	/* just spin until transmission finishes */
 	while (!(SPSR & (1 << SPIF)));
 
-	return SPDR;
+	//return SPDR;
 }

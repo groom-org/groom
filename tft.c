@@ -19,8 +19,6 @@ void tft_init(void)
 
 	SS_PORT |= (1 << DD_SS);
 
-	tft_begin();
-
 	tft_command(0xEF);
 	tft_data(0x03);
 	tft_data(0x80);
@@ -127,40 +125,50 @@ void tft_init(void)
 	tft_command(ILI9341_SLPOUT);    //Exit Sleep 
 	_delay_ms(120); 		
 	tft_command(ILI9341_DISPON);    //Display on
-
-	tft_end();
 }
 
 void tft_begin(void)
 {
+	/* spi_master_set_speed(3); */
 	SS_PORT &= ~(1 << DD_SS);
-	spi_master_set_speed(3);
+}
+
+void tft_data_on(void)
+{
+	DC_PORT |= (1 << DD_DC);
+}
+
+void tft_data_off(void)
+{
+	DC_PORT |= (1 << DD_DC);
 }
 
 void tft_command(uint8_t c)
 {
-	DC_PORT &= ~(1 << DD_DC);
+	tft_begin();
 
+	DC_PORT &= ~(1 << DD_DC);
 	spi_master_shift(c);
+
+	tft_end();
 }
 
 void tft_data(uint8_t d)
 {
-	DC_PORT |= (1 << DD_DC);
+	tft_begin();
 
+	DC_PORT |= (1 << DD_DC);
 	spi_master_shift(d);
+
+	tft_end();
 }
 
 void tft_draw_pixel(int16_t x, int16_t y, int16_t color)
 {
-	tft_begin();
-
 	tft_set_addr_window(x, y, x + 1, y + 1);
 
 	tft_data(color >> 8);
 	tft_data(color);
-
-	tft_end();
 }
 
 void tft_set_addr_window(int16_t x0, int16_t y0, int16_t x1, int16_t y1)
@@ -178,6 +186,26 @@ void tft_set_addr_window(int16_t x0, int16_t y0, int16_t x1, int16_t y1)
 	tft_data(y1);     // YEND
 
 	tft_command(ILI9341_RAMWR); // write to RAM
+}
+
+void tft_fill_rect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
+{
+	tft_set_addr_window(x, y, x + w - 1, y + h - 1);
+
+	uint8_t hi = color >> 8, lo = color;
+
+	tft_data_on();
+	tft_begin();
+
+	for (y = h; y > 0; y--) {
+		for (x = w; x > 0; x--) {
+			spi_master_shift(hi);
+			spi_master_shift(lo);
+		}
+	}
+
+	tft_end();
+	tft_data_off();
 }
 
 void tft_end(void)
