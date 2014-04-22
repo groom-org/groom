@@ -55,6 +55,8 @@ int main(void)
 		dsh_run(&shell);
 		*/
 
+		tft_println("Type Below:\r\n");
+
 		for(;;) {
 			char c = usart_in();
 			tft_text_write(c);
