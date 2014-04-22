@@ -22,7 +22,7 @@ static uint8_t wrap = 1;
  * it's kinda hacky to include a C file... but
  * the Adafruit library does it, so...
  */
- #include "glcdfont.c"
+#include "glcdfont.c"
 
 
 void tft_init(void)

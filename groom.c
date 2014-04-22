@@ -6,6 +6,7 @@
 #include "groom/encoder.h"
 #include "groom/spi.h"
 #include "groom/tft.h"
+#include "dsh/dsh.h"
 
 int main(void)
 {
@@ -46,9 +47,19 @@ int main(void)
 		tft_fill_screen(ILI9341_BLACK);
 
 		tft_set_text_color(ILI9341_WHITE, ILI9341_RED);
-		tft_println("Hello World!");
 
-		for(;;);
+		/*
+		struct dsh_shell shell;
+		dsh_init(&shell, usart_in, usart_out);
+
+		dsh_run(&shell);
+		*/
+
+		for(;;) {
+			char c = usart_in();
+			tft_text_write(c);
+			usart_out(c);
+		}
 	}
 
 	/* turn on interrupts */

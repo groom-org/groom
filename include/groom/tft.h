@@ -91,6 +91,7 @@ void tft_set_text_color(uint16_t fg, uint16_t bg);
 void tft_println(char *s);
 void tft_text_write(uint8_t c);
 void tft_draw_char(int16_t x, int16_t y, unsigned char c, uint16_t color, uint16_t bg, uint8_t size);
+void tft_fill_screen(uint16_t color);
 
 void tft_end(void);
 
