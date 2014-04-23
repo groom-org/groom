@@ -8,25 +8,16 @@
 
 static int16_t val = 0;
 
+static void encoder_update(void);
+
 ISR(INT1_vect)
 {
-	if (PIND & (1 << 3)) {
-		return;
-		usart_outstring("this shouldn't happen!\r\n");
-	}
+	encoder_update();
+}
 
-	if (PIND & (1 << 5)) {
-		val++;
-	} else {
-		val--;
-	}
-
-
-	//char buf[128];
-	//sprintf(buf, "INT1 triggered with new val %d\r\n", val);
-	//usart_outstring(buf);
-
-	//_delay_ms(1000);
+ISR(TIMER1_OVF_vect)
+{
+	encoder_update();
 }
 
 void encoder_init(void)
@@ -45,6 +36,10 @@ void encoder_init(void)
 
 	/* enable INT1 */
 	EIMSK |= (1 << 1);
+
+	/* enable timer interrupts! */
+	//TCCR1B |= _BV(CS10);
+	//TIMSK1 |= _BV(TOIE1);
 }
 
 int16_t encoder_val(void)
@@ -65,4 +60,14 @@ uint8_t encoder_sample(void)
 	}
 
 	return out;
+}
+
+void encoder_update(void)
+{
+	static int8_t enc_states[] = {0,-1,1,0,1,0,0,-1,-1,0,0,1,0,1,-1,0};
+	static uint8_t old_AB = 0;
+
+	old_AB <<= 2;
+	old_AB |= encoder_sample();
+	val += ( enc_states[( old_AB & 0x0f )]);
 }

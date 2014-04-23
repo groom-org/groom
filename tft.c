@@ -147,7 +147,7 @@ void tft_init(void)
 
 void tft_begin(void)
 {
-	/* spi_master_set_speed(3); */
+	spi_master_set_speed(0);
 	SS_PORT &= ~(1 << DD_SS);
 }
 
@@ -326,6 +326,12 @@ void tft_draw_char(int16_t x, int16_t y, unsigned char c, uint16_t color, uint16
 					tft_draw_pixel(x + i, y + j, text_fg);
 				} else {
 					tft_fill_rect(x + i * text_size, y + j * text_size, text_size, text_size, text_fg);
+				}
+			} else if (text_bg != color) {
+				if (size == 1) {
+					tft_draw_pixel(x + i, y + j, text_bg);
+				} else {
+					tft_fill_rect(x + i * text_size, y + j * text_size, text_size, text_size, text_bg);
 				}
 			}
 			line >>= 1;
