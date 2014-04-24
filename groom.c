@@ -8,15 +8,19 @@
 #include "groom/tft.h"
 #include "dsh/dsh.h"
 
-int get_temp();
-int get_spsr();
-char *get_hello();
-
-struct menu_item {
+struct status_item {
 	char *label;
 	char *format_string;
 	int (*fn)(void);
+	uint16_t (*color_fn)(void);
 };
+
+int get_temp();
+int get_spsr();
+int get_spcr();
+char *get_hello();
+void init_status(struct status_item *items, size_t n, int x, int y);
+void update_status(struct status_item *items, size_t n, int x, int y);
 
 int main(void)
 {
@@ -36,45 +40,47 @@ int main(void)
 
 	sei();
 
-	struct menu_item mitems[] = {
+	struct status_item mitems[] = {
 		{
 			"Temp",
 			"%d",
-			get_temp
+			get_temp,
+			NULL
 		},
 		{
 			"SPSR",
-			"%d",
-			get_spsr
+			"0x%.2x",
+			get_spsr,
+			NULL
 		},
+		{
+			"SPCR",
+			"0x%.2x",
+			get_spcr,
+			NULL
+		},
+		/*
 		{
 			"Hello",
 			"%s",
-			get_hello
+			get_hello,
+			NULL
 		},
+		*/
 		{
 			"Encoder Value",
 			"%d",
-			encoder_val
+			encoder_val,
+			NULL
 		}
 	};
 	int nitems = sizeof(mitems) / sizeof(mitems[0]);
 
-	tft_set_cursor(0, 0);
-	for (int i = 0; i < nitems; i++) {
-		tft_printf(mitems[i].label);
-		tft_text_write('\n');
-	}
-
-	int half_width = ILI9341_TFTWIDTH / 2;
+	init_status(mitems, nitems, 0, 0);
 
 	for(;;) {
-		tft_set_clear_newline(1);
+		update_status(mitems, nitems, 0, 0);
 
-		for (int i = 0; i < nitems; i++) {
-			tft_set_cursor(half_width, 8 * i);
-			tft_printf(mitems[i].format_string, mitems[i].fn());
-		}
 		/*
 		tft_set_cursor(half_width, 8);
 		tft_printf("%d\n", get_temp());
@@ -103,6 +109,33 @@ int main(void)
 	}
 }
 
+void init_status(struct status_item *items, size_t n, int x, int y)
+{
+	tft_set_cursor(x, y);
+	for (int i = 0; i < ILI9341_TFTWIDTH / 6; i++) {
+		tft_text_write('=');
+	}
+	tft_text_write('\n');
+	for (int i = 0; i < n; i++) {
+		tft_println(items[i].label);
+		tft_text_write('\n');
+	}
+	for (int i = 0; i < ILI9341_TFTWIDTH / 6; i++) {
+		tft_text_write('=');
+	}
+}
+
+void update_status(struct status_item *items, size_t n, int x, int y)
+{
+	tft_set_clear_newline(1);
+
+	for (int i = 0; i < n; i++) {
+		tft_set_cursor(ILI9341_TFTWIDTH / 2, y + 8 * (i + 1));
+		tft_printf(items[i].format_string, items[i].fn());
+		tft_text_write('\n');
+	}
+}
+
 int get_temp()
 {
 	static int dummy = 0;
@@ -114,6 +147,11 @@ int get_temp()
 int get_spsr()
 {
 	return SPSR;
+}
+
+int get_spcr()
+{
+	return SPCR;
 }
 
 char *get_hello()
