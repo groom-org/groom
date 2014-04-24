@@ -21,7 +21,8 @@
 static int16_t cursor_x, cursor_y;
 static uint16_t text_fg, text_bg;
 static uint8_t text_size = 1;
-static uint8_t wrap = 1;
+static uint8_t wrap = 0;
+static uint8_t clear_newline;
 
 /*
  * it's kinda hacky to include a C file... but
@@ -147,7 +148,7 @@ void tft_init(void)
 
 void tft_begin(void)
 {
-	spi_master_set_speed(0);
+	spi_master_supah_speed();
 	SS_PORT &= ~(1 << DD_SS);
 }
 
@@ -254,6 +255,11 @@ void tft_set_text_size(uint8_t s)
 	text_size = s;
 }
 
+void tft_set_clear_newline(uint8_t cn)
+{
+	clear_newline = cn;
+}
+
 void tft_println(char *s)
 {
 	while (*s != '\0') {
@@ -290,6 +296,9 @@ int tft_printf(char *format_string, ...)
 void tft_text_write(uint8_t c)
 {
 	if (c == '\n') {
+		if (clear_newline) {
+			tft_fill_rect(cursor_x, cursor_y, ILI9341_TFTWIDTH - cursor_x, text_size * 8, text_bg);
+		}
 		cursor_y += text_size * 8;
 		cursor_x = 0;
 	} else if (c == '\r') {

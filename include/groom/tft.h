@@ -89,6 +89,7 @@ void tft_fill_rect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
 void tft_set_cursor(int16_t x, int16_t y);
 void tft_set_text_color(uint16_t fg, uint16_t bg);
 void tft_set_text_size(uint8_t s);
+void tft_set_clear_newline(uint8_t cn);
 void tft_println(char *s);
 int tft_printf(char *format_string, ...) __attribute__ ((format (printf, 1, 2)));
 void tft_text_write(uint8_t c);

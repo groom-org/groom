@@ -16,6 +16,8 @@ void spi_master_init(void)
 	/* set SS as output and pull it high */
 	DDRB |= (1 << 2);
 	PORTB |= (1 << 2);
+
+	spi_master_supah_speed();
 }
 
 /*
@@ -36,6 +38,12 @@ void spi_master_set_speed(uint8_t s)
 	SPCR |= s;
 }
 
+void spi_master_supah_speed(void)
+{
+	SPCR &= ~(0x3);
+	SPSR |= (1 << SPI2X);
+}
+
 /* send the character d and return the result */
 uint8_t spi_master_shift(uint8_t d)
 {
@@ -45,5 +53,5 @@ uint8_t spi_master_shift(uint8_t d)
 	/* just spin until transmission finishes */
 	while (!(SPSR & (1 << SPIF)));
 
-	//return SPDR;
+	return SPDR;
 }

@@ -22,18 +22,22 @@ int main(void)
 	tft_init();
 
 	tft_fill_screen(ILI9341_BLACK);
-	tft_set_text_color(ILI9341_WHITE, ILI9341_RED);
+	tft_set_text_color(ILI9341_WHITE, ILI9341_BLACK);
+	tft_set_text_size(1);
+	tft_set_clear_newline(1);
 
 	sei();
+	
 	for(;;) {
 		tft_set_cursor(0, 0);
-		tft_set_text_size(1);
 
 		tft_println("Status:\r\n");
 
 		tft_printf("Temp: %d\r\n", get_temp());
 		tft_printf("Encoder sample: %d\r\n", encoder_sample());
 		tft_printf("Encoder val: %d\r\n", encoder_val());
+		tft_printf("SPCR: %d\r\n", SPCR);
+		tft_printf("SPSR: %d\r\n", SPSR);
 
 		/*
 		for(;;) {
