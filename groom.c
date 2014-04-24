@@ -75,11 +75,46 @@ int main(void)
 		}
 	};
 	int nitems = sizeof(mitems) / sizeof(mitems[0]);
+	int options_yloc = (nitems + 2) * 8;
+
+	tft_set_cursor(0, options_yloc);
+	tft_text_write('>');
+
+	tft_set_cursor(8 * 2, options_yloc);
+	tft_println("Set Temperature");
+	tft_set_cursor(8 * 2, options_yloc + 8);
+	tft_println("Do something else");
+	tft_set_cursor(8 * 2, options_yloc + 16);
+	tft_println("Do yet another thing");
 
 	init_status(mitems, nitems, 0, 0);
 
+	int cur_option = 0;
+	int num_options = 3;
+	int last_encoder_val = encoder_val();
+
 	for(;;) {
 		update_status(mitems, nitems, 0, 0);
+		int new_encoder_val = encoder_val();
+		int last_option = cur_option;
+
+		if (new_encoder_val > last_encoder_val) {
+			cur_option++;
+		} else if (new_encoder_val < last_encoder_val) {
+			cur_option--;
+			if (cur_option == -1) {
+				cur_option = num_options - 1;
+			}
+		}
+		cur_option %= num_options;
+		last_encoder_val = new_encoder_val;
+
+		if (cur_option != last_option) {
+			tft_set_cursor(0, options_yloc + 8 * last_option);
+			tft_text_write(' ');
+			tft_set_cursor(0, options_yloc + 8 * cur_option);
+			tft_text_write('>');
+		}
 
 		/*
 		tft_set_cursor(half_width, 8);
