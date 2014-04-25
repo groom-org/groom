@@ -83,16 +83,16 @@ uint8_t i2c_read2(uint8_t device_addr, char *p, uint16_t n, uint16_t a)
 		return status;
 	}
 
-	/* load high byte of address */
-	TWDR = a >> 8;
-	/* start transmission */
-	TWCR = (1 << TWINT) | (1 << TWEN);
-	/* wait for TWINT to be set */
-	while (!(TWCR & (1 << TWINT)));
-	status = TWSR & 0xf8 ;
-	if ( status != 0x28) {
-		return status;
-	}
+	///* load high byte of address */
+	//TWDR = a >> 8;
+	///* start transmission */
+	//TWCR = (1 << TWINT) | (1 << TWEN);
+	///* wait for TWINT to be set */
+	//while (!(TWCR & (1 << TWINT)));
+	//status = TWSR & 0xf8 ;
+	//if ( status != 0x28) {
+	//	return status;
+	//}
 	/* load low byte of address */
 	TWDR = a & 0xff;
 	/* start transmission */

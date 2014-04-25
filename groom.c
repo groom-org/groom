@@ -7,6 +7,8 @@
 #include "groom/spi.h"
 #include "groom/tft.h"
 #include "groom/button.h"
+#include "groom/i2c.h"
+#include "groom/rtc.h"
 
 struct status_item {
 	char *label;
@@ -18,7 +20,7 @@ struct status_item {
 int get_temp();
 int get_spsr();
 int get_spcr();
-char *get_hello();
+char *get_rtc();
 void init_status(struct status_item *items, size_t n, int x, int y);
 void update_status(struct status_item *items, size_t n, int x, int y);
 
@@ -30,12 +32,16 @@ int main(void)
 	encoder_init();
 	/* init spi */
 	spi_master_init();
+	/* init i2c */
+	i2c_init();
 	/* wait at least 1 second for all our SPI devices to properly power up */
 	_delay_ms(1000);
 	/* init tft (a SPI device) */
 	tft_init();
 	/* init button */
 	button_init();
+	/* init rtc */
+	rtc_init();
 
 	tft_fill_screen(ILI9341_BLACK);
 	tft_set_text_color(ILI9341_WHITE, ILI9341_BLACK);
@@ -81,6 +87,12 @@ int main(void)
 			"Button Value",
 			"%d",
 			button_val,
+			NULL
+		},
+		{
+			"RTC",
+			"%s",
+			get_rtc,
 			NULL
 		}
 	};
@@ -199,7 +211,19 @@ int get_spcr()
 	return SPCR;
 }
 
-char *get_hello()
+char *get_rtc()
 {
-	return "Hi there!";
+	// YYYY-MM-DD HH:MM:SS
+	static char buf[20];
+	struct rtc_time t;
+	rtc_get_time(&t);
+	sprintf(buf, "20%.2d-%.2d-%.2d %.2d:%.2d:%.2d",
+	        t.year,
+	        t.month,
+	        t.day,
+	        t.hours,
+	        t.minutes,
+	        t.seconds);
+
+	return buf;
 }

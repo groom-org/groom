@@ -21,6 +21,7 @@ OBJECTS   += tft.o
 OBJECTS   += button.o
 OBJECTS   += usart_mux.o
 OBJECTS   += i2c.o
+OBJECTS   += rtc.o
 
 all: groom.hex
 
