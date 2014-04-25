@@ -36,8 +36,6 @@ void tft_init(void)
 	SS_DDR |= (1 << DD_SS);
 	DC_DDR |= (1 << DD_DC);
 
-	SS_PORT |= (1 << DD_SS);
-
 	tft_command(0xEF);
 	tft_data(0x03);
 	tft_data(0x80);

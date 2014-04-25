@@ -30,7 +30,9 @@ int main(void)
 	encoder_init();
 	/* init spi */
 	spi_master_init();
-	/* init tft */
+	/* wait at least 1 second for all our SPI devices to properly power up */
+	_delay_ms(1000);
+	/* init tft (a SPI device) */
 	tft_init();
 
 	tft_fill_screen(ILI9341_BLACK);
