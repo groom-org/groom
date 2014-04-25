@@ -6,7 +6,7 @@
 #include "groom/encoder.h"
 #include "groom/spi.h"
 #include "groom/tft.h"
-#include "dsh/dsh.h"
+#include "groom/button.h"
 
 struct status_item {
 	char *label;
@@ -34,6 +34,8 @@ int main(void)
 	_delay_ms(1000);
 	/* init tft (a SPI device) */
 	tft_init();
+	/* init button */
+	button_init();
 
 	tft_fill_screen(ILI9341_BLACK);
 	tft_set_text_color(ILI9341_WHITE, ILI9341_BLACK);
@@ -73,6 +75,12 @@ int main(void)
 			"Encoder Value",
 			"%d",
 			encoder_val,
+			NULL
+		},
+		{
+			"Button Value",
+			"%d",
+			button_val,
 			NULL
 		}
 	};
