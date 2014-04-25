@@ -20,6 +20,7 @@ OBJECTS   += encoder.o
 OBJECTS   += tft.o
 OBJECTS   += button.o
 OBJECTS   += usart_mux.o
+OBJECTS   += i2c.o
 
 all: groom.hex
 
