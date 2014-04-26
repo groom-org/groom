@@ -1,3 +1,8 @@
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include <avr/io.h>
 
 #include "groom/usart.h"
@@ -22,9 +27,35 @@ char usart_in(void)
 	return UDR0;
 }
 
-void usart_outstring(char *s) {
+void usart_outstring(char *s)
+{
 	while (*s != '\0') {
 		usart_out(*s);
 		s++;
 	}
+}
+
+int usart_printf(char *format_string, ...)
+{
+	va_list varargs;
+	char *string = NULL;
+	int size;
+
+	va_start(varargs, format_string);
+	size = vsnprintf(string, 0, format_string, varargs);
+	va_end(varargs);
+
+	string = malloc(size + 1);
+	if (!string) {
+		return -1;
+	}
+
+	va_start(varargs, format_string);
+	vsnprintf(string, size + 1, format_string, varargs);
+	va_end(varargs);
+
+	usart_outstring(string);
+	free(string);
+
+	return 0;
 }

@@ -4,160 +4,124 @@
 
 #define BDIV ((F_CPU / 100000 - 16) / 2 + 1)
 
-void i2c_init(void)
+/*
+  i2c_init - Initialize the I2C port
+*/
+void i2c_init()
 {
-	/* set prescaler for 1 */
-	TWSR = 0;
-	/* set bit rate register */
-	TWBR = BDIV;
+	TWSR = 0;                     // Set prescalar for 1
+	TWBR = BDIV;                  // Set bit rate register
 }
 
-uint8_t i2c_write(uint8_t device_addr, char *p, uint16_t n)
+uint8_t i2c_io(uint8_t device_addr, uint8_t *ap, uint16_t an, 
+               uint8_t *wp, uint16_t wn, uint8_t *rp, uint16_t rn)
 {
-	uint8_t status;
+    uint8_t status, send_stop, wrote, start_stat;
 
-	/* send start condition */
-	TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWSTA);
-	/* wait for TWINT to be set */
-	while (!( TWCR & (1 << TWINT )));
-	status = TWSR & 0xf8;
-	if (status != 0x08) {
-		return status;
-	}
+    status = 0;
+    wrote = 0;
+    send_stop = 0;
 
-	/* Load device address and R/W = 0 */
-	TWDR = device_addr & 0xfe ;
-	/* start transmission */
-	TWCR = (1 << TWINT ) | (1 << TWEN );
-	/* wait for TWINT to be set */
-	while (!( TWCR & (1 << TWINT )));
-	status = TWSR & 0xf8 ;
-	if (status != 0x08) {
-		return status;
-	}
+    if (an > 0 || wn > 0) {
+        wrote = 1;
+        send_stop = 1;
 
-	while (n-- > 0) {
-		/* put the next data byte in TWDR */
-		TWDR = *p++;
-		/* start the transmission */
-		TWCR = (1 << TWINT) | (1 << TWEN);
-		/* wait for TWINT to be set */
-		while (!( TWCR & (1 << TWINT )));
+        TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWSTA);  // Send start condition
+        while (!(TWCR & (1 << TWINT)));     // Wait for TWINT to be set
+        status = TWSR & 0xf8;
+        if (status != 0x08)                 // Check that START was sent OK
+            return(status);
 
-		status = TWSR & 0xf8;
-		/* check that data sent was OK */
-		if (status != 0x28) {
-			return status;
-		}
+        TWDR = device_addr & 0xfe;          // Load device address and R/W = 0;
+        TWCR = (1 << TWINT) | (1 << TWEN);  // Start transmission
+        while (!(TWCR & (1 << TWINT)));     // Wait for TWINT to be set
+        status = TWSR & 0xf8;
+        if (status != 0x18) {               // Check that SLA+W was sent OK
+            if (status == 0x20)             // Check for NAK
+                goto nakstop;               // Send STOP condition
+            return(status);                 // Otherwise just return the status
+        }
 
-		/* send stop condition */
-		TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWSTO);
-	}
+        // Write "an" data bytes to the slave device
+        while (an-- > 0) {
+            TWDR = *ap++;                   // Put next data byte in TWDR
+            TWCR = (1 << TWINT) | (1 << TWEN); // Start transmission
+            while (!(TWCR & (1 << TWINT))); // Wait for TWINT to be set
+            status = TWSR & 0xf8;
+            if (status != 0x28) {           // Check that data was sent OK
+                if (status == 0x30)         // Check for NAK
+                    goto nakstop;           // Send STOP condition
+                return(status);             // Otherwise just return the status
+            }
+        }
 
-	return 0;
-}
+        // Write "wn" data bytes to the slave device
+        while (wn-- > 0) {
+            TWDR = *wp++;                   // Put next data byte in TWDR
+            TWCR = (1 << TWINT) | (1 << TWEN); // Start transmission
+            while (!(TWCR & (1 << TWINT))); // Wait for TWINT to be set
+            status = TWSR & 0xf8;
+            if (status != 0x28) {           // Check that data was sent OK
+                if (status == 0x30)         // Check for NAK
+                    goto nakstop;           // Send STOP condition
+                return(status);             // Otherwise just return the status
+            }
+        }
 
-uint8_t i2c_read2(uint8_t device_addr, char *p, uint16_t n, uint16_t a)
-{
-	uint8_t status;
+        status = 0;                         // Set status value to successful
+    }
 
-	/* send start condition */
-	TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWSTA);
-	while (!( TWCR & (1 << TWINT))); 
-	status = TWSR & 0xf8;
-	/* check taht STRT was sent OK */
-	if (status != 0x08) {
-		return status;
-	}
+    if (rn > 0) {
+        send_stop = 1;
 
-	/* load device address and R / W = 0; */
-	TWDR = device_addr & 0xfe;
-	/* start transmission */
-	TWCR = (1 << TWINT ) | (1 << TWEN );
-	/* wait for TWINT to be set */
-	while (!( TWCR & (1 << TWINT)));
+        // Set the status value to check for depending on whether this is a
+        // START or repeated START
+        start_stat = (wrote) ? 0x10 : 0x08;
 
-	status = TWSR & 0xf8 ;
-	/* check that SLA + W was sent OK */
-	if ( status != 0x18) {
-		return status;
-	}
+        // Put TWI into Master Receive mode by sending a START, which could
+        // be a repeated START condition if we just finished writing.
+        TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWSTA);
+                                            // Send start (or repeated start) condition
+        while (!(TWCR & (1 << TWINT)));     // Wait for TWINT to be set
+        status = TWSR & 0xf8;
+        if (status != start_stat)           // Check that START or repeated START sent OK
+            return(status);
 
-	///* load high byte of address */
-	//TWDR = a >> 8;
-	///* start transmission */
-	//TWCR = (1 << TWINT) | (1 << TWEN);
-	///* wait for TWINT to be set */
-	//while (!(TWCR & (1 << TWINT)));
-	//status = TWSR & 0xf8 ;
-	//if ( status != 0x28) {
-	//	return status;
-	//}
-	/* load low byte of address */
-	TWDR = a & 0xff;
-	/* start transmission */
-	TWCR = (1 << TWINT) | (1 << TWEN);
-	/* wait for twint to be set */
-	while (!(TWCR & (1 << TWINT)));
-	status = TWSR & 0xf8 ;
-	/* check that data was sent OK */
-	if ( status != 0x28 ) {
-		return status;
-	}
-	/* put TWI into Master Receive mode by sending a repeated START condition */
-	TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWSTA);
-	/* Send repeated start condition */
-	/* wait for TWINT to be set */
-	while (!( TWCR & (1 << TWINT )));
-	status = TWSR & 0xf8;
-	/* check that repeated start sent OK */
-	if ( status != 0x10 ) {
-		return status;
-	}
-	/* load device address and R / W = 1 */
-	TWDR = device_addr | 0x01;
-	/* send address + r */
-	TWCR = (1 << TWINT) | (1 << TWEN);
-	/* wait for TWINT to be set */
-	while (!(TWCR & (1 << TWINT)));
-	status = TWSR & 0xf8;
-	/* check that SLA + R was sent OK */
-	if ( status != 0x40 ) {
-		return status;
-	}
+        TWDR = device_addr  | 0x01;         // Load device address and R/W = 1;
+        TWCR = (1 << TWINT) | (1 << TWEN);  // Send address+r
+        while (!(TWCR & (1 << TWINT)));     // Wait for TWINT to be set
+        status = TWSR & 0xf8;
+        if (status != 0x40) {               // Check that SLA+R was sent OK
+            if (status == 0x48)             // Check for NAK
+                goto nakstop;
+            return(status);
+        }
 
-	/* Read all but the last of n bytes from the slave device in this loop */
-	n--;
-	while (n-- > 0) {
-		/* read byte and send ACK */
-		TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWEA);
-		/* wait for TWINT to be set */
-		while (!( TWCR & (1 << TWINT )));
-		status = TWSR & 0xf8;
-		/* check that data was received OK */
-		if (status != 0x50) {
-			return status;
-		}
-		/* read the data */
-		*p++ = TWDR;
-	}
-	/*
-	 * The last byte is read in a similar manner but the control register is set to not send an acknowledge after
-	 * receiving it. After the byte has been received and stored in the arry, the stop condition is set to terminate
-	 * the transfers.
-	 */
-	/* read the last byte with NOT ack sent */
-	TWCR = (1 << TWINT) | (1 << TWEN);
-	/* wait for TWINT to be set */
-	while (!( TWCR & (1 << TWINT )));
-	status = TWSR & 0xf8 ;
-	/* check that data received OK */
-	if (status != 0x58) {
-		return status;
-	}
-	/* read the data */
-	*p++ = TWDR;
-	/* send stop condition */
-	TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWSTO);
-	return 0;
+        // Read all but the last of n bytes from the slave device in this loop
+        rn--;
+        while (rn-- > 0) {
+            TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWEA); // Read byte and send ACK
+            while (!(TWCR & (1 << TWINT))); // Wait for TWINT to be set
+            status = TWSR & 0xf8;
+            if (status != 0x50)             // Check that data received OK
+                return(status);
+            *rp++ = TWDR;                   // Read the data
+        }
+
+        // Read the last byte
+        TWCR = (1 << TWINT) | (1 << TWEN);  // Read last byte with NOT ACK sent
+        while (!(TWCR & (1 << TWINT)));     // Wait for TWINT to be set
+        status = TWSR & 0xf8;
+        if (status != 0x58)                 // Check that data received OK
+            return(status);
+        *rp++ = TWDR;                       // Read the data
+
+        status = 0;                         // Set status value to successful
+    }
+    
+nakstop:                                    // Come here to send STOP after a NAK
+    if (send_stop)
+        TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWSTO);  // Send STOP condition
+
+    return(status);
 }

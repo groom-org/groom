@@ -15,4 +15,6 @@ void rtc_init(void);
 
 uint8_t rtc_get_time(struct rtc_time *time_buf);
 
+uint8_t rtc_run(void);
+
 #endif /* GROOM_RTC_H_ */

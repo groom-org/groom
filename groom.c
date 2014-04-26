@@ -48,6 +48,9 @@ int main(void)
 	tft_set_text_size(1);
 	tft_set_clear_newline(0);
 
+	uint8_t rtc_run_res = rtc_run();
+	usart_printf("rct_run res: 0x%.2x", rtc_run_res);
+
 	sei();
 
 	struct status_item mitems[] = {
@@ -216,7 +219,11 @@ char *get_rtc()
 	// YYYY-MM-DD HH:MM:SS
 	static char buf[20];
 	struct rtc_time t;
-	rtc_get_time(&t);
+	uint8_t res = rtc_get_time(&t);
+	if (res) {
+		sprintf(buf, "err: 0x%.2x", res);
+		return buf;
+	}
 	sprintf(buf, "20%.2d-%.2d-%.2d %.2d:%.2d:%.2d",
 	        t.year,
 	        t.month,
