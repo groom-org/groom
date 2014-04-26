@@ -16,6 +16,8 @@ uint8_t rtc_get_time(struct rtc_time *time_buf)
 	uint8_t abuf[1];
 	uint8_t buf[7];
 
+	abuf[0] = 0x00;
+
 	int res = i2c_io(RTC_DEVICE_ADDRESS, abuf, sizeof(abuf), NULL, 0, buf, sizeof(buf));
 	if (res) {
 		return res;
@@ -47,16 +49,18 @@ uint8_t rtc_get_time(struct rtc_time *time_buf)
 
 uint8_t rtc_run(void)
 {
-	uint8_t abuf[1];
-	abuf[0] = 0x00;
-	uint8_t buf[7];
-	buf[0] = 0x15;
-	buf[1] = 0x30;
-	buf[2] = 0x45;
-	buf[3] = 0x05;
-	buf[4] = 0x25;
-	buf[5] = 0x04;
-	buf[6] = 0x13;
+	uint8_t buf[] = {
+		0x30, // seconds
+		0x29, // minutes
+		0x18, // hours
+		0x06, // day
+		0x25, // date
+		0x04, // month
+		0x13  // year
+	};
+	uint8_t abuf[] = {
+		0x00
+	};
 
 	return i2c_io(RTC_DEVICE_ADDRESS, abuf, sizeof(abuf), buf, sizeof(buf), NULL, 0);
 }

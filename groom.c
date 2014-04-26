@@ -48,8 +48,11 @@ int main(void)
 	tft_set_text_size(1);
 	tft_set_clear_newline(0);
 
+	/* uncomment to set time */
+	/*
 	uint8_t rtc_run_res = rtc_run();
 	usart_printf("rct_run res: 0x%.2x", rtc_run_res);
+	*/
 
 	sei();
 
@@ -227,7 +230,7 @@ char *get_rtc()
 	sprintf(buf, "20%.2d-%.2d-%.2d %.2d:%.2d:%.2d",
 	        t.year,
 	        t.month,
-	        t.day,
+	        t.date,
 	        t.hours,
 	        t.minutes,
 	        t.seconds);
