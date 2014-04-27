@@ -11,40 +11,76 @@ CFLAGS    += -DF_CPU=$(CLOCK)
 CFLAGS    += -DF_UBRR=$(UBRR)
 CFLAGS    += -mmcu=$(DEVICE)
 
+CFLAGS_MASTER = -DGROOM_MASTER
+
+CFLAGS_ALPHA  = -DGROOM_ALPHA
+
+CFLAGS_BETA   = -DGROOM_BETA
+
 AVRDUDE    = avrdude $(PROGRAMMER) -p $(DEVICE)
 
-OBJECTS    = groom.o
-OBJECTS   += spi.o
-OBJECTS   += usart.o
-OBJECTS   += encoder.o
-OBJECTS   += tft.o
-OBJECTS   += button.o
-OBJECTS   += usart_mux.o
-OBJECTS   += i2c.o
-OBJECTS   += rtc.o
+OBJECTS_MASTER    = groom_master.o
+OBJECTS_MASTER   += spi.o
+OBJECTS_MASTER   += usart.o
+OBJECTS_MASTER   += encoder.o
+OBJECTS_MASTER   += tft.o
+OBJECTS_MASTER   += button.o
+OBJECTS_MASTER   += usart_mux.o
+OBJECTS_MASTER   += i2c.o
+OBJECTS_MASTER   += rtc.o
 
-all: groom.hex
+OBJECTS_ALPHA     = groom_alpha.o
+
+OBJECTS_BETA      = groom_beta.o
+
+all: groom_master.hex groom_alpha.hex groom_beta.hex
 
 .c.o:
 	$(AVRGCC) -c $(CFLAGS) $< -o $@
 
-flash: all
-	$(AVRDUDE) -U flash:w:groom.hex:i
+flash_master: groom_master.hex
+	$(AVRDUDE) -U flash:w:groom_master.hex:i
+
+flash_alpha: groom_alpha.hex
+	$(AVRDUDE) -U flash:w:groom_alpha.hex:i
+
+flash_beta: groom_beta.hex
+	$(AVRDUDE) -U flash:w:groom_beta.hex:i
 
 fuse:
 	$(AVRDUDE) $(FUSES)
 
 install: flash fuse
 
-groom.elf: $(OBJECTS)
-	$(AVRGCC) $(CFLAGS) $(OBJECTS) -o groom.elf
+groom_master.elf: $(OBJECTS_MASTER)
+	$(AVRGCC) $(CFLAGS) $(CFLAGS_MASTER) $(OBJECTS_MASTER) -o groom_master.elf
 
-groom.hex: groom.elf
-	-rm -f groom.hex
-	avr-objcopy -j .text -j .data -O ihex groom.elf groom.hex
+groom_alpha.elf: $(OBJECTS_ALPHA)
+	$(AVRGCC) $(CFLAGS) $(CFLAGS_ALPHA) $(OBJECTS_ALPHA) -o groom_alpha.elf
 
-disasm: groom.elf
-	avr-objdump -d groom.elf
+groom_beta.elf: $(OBJECTS_BETA)
+	$(AVRGCC) $(CFLAGS) $(CFLAGS_BETA) $(OBJECTS_BETA) -o groom_beta.elf
+
+groom_master.hex: groom_master.elf
+	-rm -f groom_master.hex
+	avr-objcopy -j .text -j .data -O ihex groom_master.elf groom_master.hex
+
+groom_alpha.hex: groom_alpha.elf
+	-rm -f groom_alpha.hex
+	avr-objcopy -j .text -j .data -O ihex groom_alpha.elf groom_alpha.hex
+
+groom_beta.hex: groom_beta.elf
+	-rm -f groom_beta.hex
+	avr-objcopy -j .text -j .data -O ihex groom_beta.elf groom_beta.hex
+
+disasm_master: groom_master.elf
+	avr-objdump -d groom_master.elf
+
+disasm_alpha: groom_alpha.elf
+	avr-objdump -d groom_alpha.elf
+	
+disasm_beta: groom_beta.elf
+	avr-objdump -d groom_beta.elf
 
 clean:
 	-rm -f *.o
