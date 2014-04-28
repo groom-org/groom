@@ -2,9 +2,11 @@
 
 #include "groom/usart_mux.h"
 
+#ifdef GROOM_MASTER
 #define USART_MUX_PORT PORTD
 #define USART_MUX_DDR DDRD
 #define USART_MUX_NUM 2
+#endif /* GROOM_MASTER */
 
 void usart_mux_init(void)
 {
