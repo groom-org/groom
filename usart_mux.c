@@ -2,8 +2,8 @@
 
 #include "groom/usart_mux.h"
 
-#define USART_MUX_PORT PORTC
-#define USART_MUX_DDR DDRC
+#define USART_MUX_PORT PORTD
+#define USART_MUX_DDR DDRD
 #define USART_MUX_NUM 2
 
 void usart_mux_init(void)
