@@ -40,6 +40,8 @@ char* com_requestdata(char DeviceDATAID){
 			}else{
 				sprintf(buffer,"TIME_OUT\r");
 				count=0;
+				i=0;                //Reset buffer index
+				interruptstate=0;
 				return buffer
 			}
 			
