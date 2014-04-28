@@ -1,6 +1,9 @@
 AVRGCC     = avr-gcc
 CFLAGS     = -Iinclude -Os -Wall -std=c99
 
+CC         = $(AVRGCC)
+LD         = $(CC)
+
 DEVICE     = atmega328p
 CLOCK      = 9830400
 UBRR       = 63
@@ -38,25 +41,25 @@ OBJECTS_BETA     += usart_beta.o
 all: groom_master.hex groom_alpha.hex groom_beta.hex
 
 groom_master.o: groom_master.c
-	$(AVRGCC) -c $(CFLAGS) $(CFLAGS_MASTER) $< -o $@
+	$(CC) -c $(CFLAGS) $(CFLAGS_MASTER) $< -o $@
 
 groom_alpha.o: groom_alpha.c
-	$(AVRGCC) -c $(CFLAGS) $(CFLAGS_ALPHA) $< -o $@
+	$(CC) -c $(CFLAGS) $(CFLAGS_ALPHA) $< -o $@
 
 groom_beta.o: groom_beta.c
-	$(AVRGCC) -c $(CFLAGS) $(CFLAGS_BETA) $< -o $@
+	$(CC) -c $(CFLAGS) $(CFLAGS_BETA) $< -o $@
 
 %.o: %.c
-	$(AVRGCC) -c $(CFLAGS) $< -o $@
+	$(CC) -c $(CFLAGS) $< -o $@
 
 %_master.o: %.c
-	$(AVRGCC) -c $(CFLAGS) $(CFLAGS_MASTER) $< -o $@
+	$(CC) -c $(CFLAGS) $(CFLAGS_MASTER) $< -o $@
 
 %_alpha.o: %.c
-	$(AVRGCC) -c $(CFLAGS) $(CFLAGS_ALPHA) $< -o $@
+	$(CC) -c $(CFLAGS) $(CFLAGS_ALPHA) $< -o $@
 
 %_beta.o: %.c
-	$(AVRGCC) -c $(CFLAGS) $(CFLAGS_BETA) $< -o $@
+	$(CC) -c $(CFLAGS) $(CFLAGS_BETA) $< -o $@
 
 flash_master: groom_master.hex
 	$(AVRDUDE) -U flash:w:groom_master.hex:i
@@ -73,13 +76,13 @@ fuse:
 install: flash fuse
 
 groom_master.elf: $(OBJECTS_MASTER)
-	$(AVRGCC) $(CFLAGS) $(CFLAGS_MASTER) $(OBJECTS_MASTER) -o groom_master.elf
+	$(LD) $(CFLAGS) $(CFLAGS_MASTER) $(OBJECTS_MASTER) -o groom_master.elf
 
 groom_alpha.elf: $(OBJECTS_ALPHA)
-	$(AVRGCC) $(CFLAGS) $(CFLAGS_ALPHA) $(OBJECTS_ALPHA) -o groom_alpha.elf
+	$(LD) $(CFLAGS) $(CFLAGS_ALPHA) $(OBJECTS_ALPHA) -o groom_alpha.elf
 
 groom_beta.elf: $(OBJECTS_BETA)
-	$(AVRGCC) $(CFLAGS) $(CFLAGS_BETA) $(OBJECTS_BETA) -o groom_beta.elf
+	$(LD) $(CFLAGS) $(CFLAGS_BETA) $(OBJECTS_BETA) -o groom_beta.elf
 
 groom_master.hex: groom_master.elf
 	-rm -f groom_master.hex
