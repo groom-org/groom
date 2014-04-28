@@ -13,6 +13,10 @@ void usart_init()
 	UCSR0B |= (1 << TXEN0);
 	UCSR0B |= (1 << RXEN0);
 	UCSR0C = (3 << UCSZ00);
+
+	#ifdef GROOM_MASTER
+	UCSR0B |= (1 << RXCIE0);	
+	#endif
 }
 
 void usart_out(char ch)

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
@@ -9,6 +10,8 @@
 #include "groom/button.h"
 #include "groom/i2c.h"
 #include "groom/rtc.h"
+#include "groom/usart_mux.h"
+#include "groom/com.h"
 
 struct status_item {
 	char *label;
@@ -21,6 +24,8 @@ int get_temp();
 int get_spsr();
 int get_spcr();
 char *get_rtc();
+char *get_s1_status();
+char *get_s2_status();
 void init_status(struct status_item *items, size_t n, int x, int y);
 void update_status(struct status_item *items, size_t n, int x, int y);
 
@@ -42,6 +47,8 @@ int main(void)
 	button_init();
 	/* init rtc */
 	rtc_init();
+	/* initialize the mux for the usart */
+	usart_mux_init();
 
 	tft_fill_screen(ILI9341_BLACK);
 	tft_set_text_color(ILI9341_WHITE, ILI9341_BLACK);
@@ -99,6 +106,18 @@ int main(void)
 			"RTC",
 			"%s",
 			get_rtc,
+			NULL
+		},
+		{
+			"Slave 1 Status",
+			"%s",
+			get_s1_status,
+			NULL
+		},
+		{
+			"Slave 2 Status",
+			"%s",
+			get_s2_status,
 			NULL
 		}
 	};
@@ -234,6 +253,36 @@ char *get_rtc()
 	        t.hours,
 	        t.minutes,
 	        t.seconds);
+
+	return buf;
+}
+
+char *get_s1_status()
+{
+	static char buf[9];
+
+	uint8_t res = com_heartbeat('1');
+
+	if (res) {
+		strcpy(buf, "active");
+	} else {
+		strcpy(buf, "inactive");
+	}
+
+	return buf;
+}
+
+char *get_s2_status()
+{
+	static char buf[9];
+
+	uint8_t res = com_heartbeat('2');
+
+	if (res) {
+		strcpy(buf, "active");
+	} else {
+		strcpy(buf, "inactive");
+	}
 
 	return buf;
 }
