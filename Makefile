@@ -30,8 +30,10 @@ OBJECTS_MASTER   += i2c_master.o
 OBJECTS_MASTER   += rtc_master.o
 
 OBJECTS_ALPHA     = groom_alpha.o
+OBJECTS_ALPHA    += usart_alpha.o
 
 OBJECTS_BETA      = groom_beta.o
+OBJECTS_BETA     += usart_beta.o
 
 all: groom_master.hex groom_alpha.hex groom_beta.hex
 
@@ -43,6 +45,9 @@ groom_alpha.o: groom_alpha.c
 
 groom_beta.o: groom_beta.c
 	$(AVRGCC) -c $(CFLAGS) $(CFLAGS_BETA) $< -o $@
+
+%.o: %.c
+	$(AVRGCC) -c $(CFLAGS) $< -o $@
 
 %_master.o: %.c
 	$(AVRGCC) -c $(CFLAGS) $(CFLAGS_MASTER) $< -o $@
