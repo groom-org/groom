@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include <avr/io.h>
+#include <avr/interrupt.h>
 
 #include "groom/usart.h"
 
@@ -16,6 +17,11 @@ void usart_init()
 
 	#ifdef GROOM_MASTER
 	UCSR0B |= (1 << RXCIE0);	
+	#endif
+
+	#ifdef GROOM_BETA
+	UCSR0B |= (1 << RXCIE0);	
+	sei();//enable interrupt
 	#endif
 }
 
