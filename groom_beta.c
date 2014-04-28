@@ -55,7 +55,7 @@ void senddata(){
 	
 	uint16_t result = read_adc(1);	
 	char buf[128];
-	sprintf(buf, "sample: %d\r", result);
+	sprintf(buf, "%d\r", result);
 	usart_outstring(buf);
 	//usart_outstring("HANXIAO\r");
 	c='0';

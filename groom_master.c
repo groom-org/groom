@@ -26,10 +26,12 @@ int get_spcr();
 char *get_rtc();
 char *get_s1_status();
 char *get_s2_status();
+char *get_photodiode();
 void init_status(struct status_item *items, size_t n, int x, int y);
 void update_status(struct status_item *items, size_t n, int x, int y);
 
 uint8_t temp_hb = 0;
+uint8_t pd_hb = 0;
 
 int main(void)
 {
@@ -120,6 +122,12 @@ int main(void)
 			"Temperature",
 			"%s",
 			get_temp,
+			NULL
+		},
+		{
+			"Photodiode",
+			"%s",
+			get_photodiode,
 			NULL
 		}
 	};
@@ -241,6 +249,27 @@ char *get_temp()
 	}
 }
 
+char *get_photodiode()
+{
+	static int i = 0;
+	static char buf[9];
+
+	if (i != 5) {
+		i++;
+		return buf;
+	} else {
+		i = 0;
+	}
+
+	if (pd_hb) {
+		char *val = com_requestdata('4');
+		strcpy(buf, val);
+		return buf;
+	} else {
+		return buf;
+	}
+}
+
 int get_spsr()
 {
 	return SPSR;
@@ -290,7 +319,10 @@ char *get_s2_status()
 	uint8_t res = com_heartbeat('2');
 
 	if (res) {
+		pd_hb = 1;
 		return "active";
 	}
+
+	pd_hb = 0;
 	return "inactive";
 }
