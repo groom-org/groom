@@ -35,10 +35,8 @@ OBJECTS_MASTER   += com_master.o
 OBJECTS_MASTER   += usart_mux_master.o
 
 OBJECTS_ALPHA     = groom_alpha.o
-OBJECTS_ALPHA    += usart_alpha.o
 
 OBJECTS_BETA      = groom_beta.o
-OBJECTS_BETA     += usart_beta.o
 
 all: groom_master.hex groom_alpha.hex groom_beta.hex
 

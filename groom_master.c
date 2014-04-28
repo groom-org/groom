@@ -29,6 +29,8 @@ char *get_s2_status();
 void init_status(struct status_item *items, size_t n, int x, int y);
 void update_status(struct status_item *items, size_t n, int x, int y);
 
+uint8_t temp_hb = 0;
+
 int main(void)
 {
 	/* init usart */
@@ -64,12 +66,6 @@ int main(void)
 	sei();
 
 	struct status_item mitems[] = {
-		{
-			"Temp",
-			"%d",
-			get_temp,
-			NULL
-		},
 		{
 			"SPSR",
 			"0x%.2x",
@@ -118,6 +114,12 @@ int main(void)
 			"Slave 2 Status",
 			"%s",
 			get_s2_status,
+			NULL
+		},
+		{
+			"Temperature",
+			"%s",
+			get_temp,
 			NULL
 		}
 	};
@@ -220,10 +222,14 @@ void update_status(struct status_item *items, size_t n, int x, int y)
 
 int get_temp()
 {
-	static int dummy = 0;
-	dummy++;
-
-	return dummy;
+	static char buf[9];
+	if (temp_hb) {
+		char *val = com_requestdata('3');
+		strcpy(buf, val);
+		return buf;
+	} else {
+		return buf;
+	}
 }
 
 int get_spsr()
@@ -259,30 +265,23 @@ char *get_rtc()
 
 char *get_s1_status()
 {
-	static char buf[9];
-
 	uint8_t res = com_heartbeat('1');
 
 	if (res) {
-		strcpy(buf, "active");
-	} else {
-		strcpy(buf, "inactive");
+		temp_hb = 1;
+		return "active";
 	}
 
-	return buf;
+	temp_hb = 0;
+	return "inactive";
 }
 
 char *get_s2_status()
 {
-	static char buf[9];
-
 	uint8_t res = com_heartbeat('2');
 
 	if (res) {
-		strcpy(buf, "active");
-	} else {
-		strcpy(buf, "inactive");
+		return "active";
 	}
-
-	return buf;
+	return "inactive";
 }
