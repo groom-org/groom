@@ -20,7 +20,7 @@ struct status_item {
 	uint16_t (*color_fn)(void);
 };
 
-int get_temp();
+char *get_temp();
 int get_spsr();
 int get_spcr();
 char *get_rtc();
@@ -220,9 +220,18 @@ void update_status(struct status_item *items, size_t n, int x, int y)
 	}
 }
 
-int get_temp()
+char *get_temp()
 {
+	static int i = 0;
 	static char buf[9];
+
+	if (i != 10) {
+		i++;
+		return buf;
+	} else {
+		i = 0;
+	}
+
 	if (temp_hb) {
 		char *val = com_requestdata('3');
 		strcpy(buf, val);
