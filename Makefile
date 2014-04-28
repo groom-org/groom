@@ -61,50 +61,28 @@ groom_beta.o: groom_beta.c
 %_beta.o: %.c
 	$(CC) -c $(CFLAGS) $(CFLAGS_BETA) $< -o $@
 
-flash_master: groom_master.hex
-	$(AVRDUDE) -U flash:w:groom_master.hex:i
-
-flash_alpha: groom_alpha.hex
-	$(AVRDUDE) -U flash:w:groom_alpha.hex:i
-
-flash_beta: groom_beta.hex
-	$(AVRDUDE) -U flash:w:groom_beta.hex:i
-
+flash_%: groom_%.hex
+	$(AVRDUDE) -U flash:w:$<:i
 fuse:
 	$(AVRDUDE) $(FUSES)
 
 install: flash fuse
 
 groom_master.elf: $(OBJECTS_MASTER)
-	$(LD) $(CFLAGS) $(CFLAGS_MASTER) $(OBJECTS_MASTER) -o groom_master.elf
+	$(LD) $(CFLAGS) $(CFLAGS_MASTER) $^ -o $@
 
 groom_alpha.elf: $(OBJECTS_ALPHA)
-	$(LD) $(CFLAGS) $(CFLAGS_ALPHA) $(OBJECTS_ALPHA) -o groom_alpha.elf
+	$(LD) $(CFLAGS) $(CFLAGS_ALPHA) $^ -o $@
 
 groom_beta.elf: $(OBJECTS_BETA)
-	$(LD) $(CFLAGS) $(CFLAGS_BETA) $(OBJECTS_BETA) -o groom_beta.elf
+	$(LD) $(CFLAGS) $(CFLAGS_BETA) $^ -o $@
 
-groom_master.hex: groom_master.elf
-	-rm -f groom_master.hex
-	avr-objcopy -j .text -j .data -O ihex groom_master.elf groom_master.hex
+%.hex: %.elf
+	-rm -f $@
+	avr-objcopy -j .text -j .data -O ihex $< $@
 
-groom_alpha.hex: groom_alpha.elf
-	-rm -f groom_alpha.hex
-	avr-objcopy -j .text -j .data -O ihex groom_alpha.elf groom_alpha.hex
-
-groom_beta.hex: groom_beta.elf
-	-rm -f groom_beta.hex
-	avr-objcopy -j .text -j .data -O ihex groom_beta.elf groom_beta.hex
-
-disasm_master: groom_master.elf
-	avr-objdump -d groom_master.elf
-
-disasm_alpha: groom_alpha.elf
-	avr-objdump -d groom_alpha.elf
-	
-disasm_beta: groom_beta.elf
-	avr-objdump -d groom_beta.elf
-
+disasm_%: groom_%.elf
+	avr-objdump -d $<
 clean:
 	-rm -f *.o
 	-rm -f *.elf
