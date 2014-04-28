@@ -20,14 +20,14 @@ CFLAGS_BETA   = -DGROOM_BETA
 AVRDUDE    = avrdude $(PROGRAMMER) -p $(DEVICE)
 
 OBJECTS_MASTER    = groom_master.o
-OBJECTS_MASTER   += spi.o
-OBJECTS_MASTER   += usart.o
-OBJECTS_MASTER   += encoder.o
-OBJECTS_MASTER   += tft.o
-OBJECTS_MASTER   += button.o
-OBJECTS_MASTER   += usart_mux.o
-OBJECTS_MASTER   += i2c.o
-OBJECTS_MASTER   += rtc.o
+OBJECTS_MASTER   += spi_master.o
+OBJECTS_MASTER   += usart_master.o
+OBJECTS_MASTER   += encoder_master.o
+OBJECTS_MASTER   += tft_master.o
+OBJECTS_MASTER   += button_master.o
+OBJECTS_MASTER   += usart_mux_master.o
+OBJECTS_MASTER   += i2c_master.o
+OBJECTS_MASTER   += rtc_master.o
 
 OBJECTS_ALPHA     = groom_alpha.o
 
@@ -35,8 +35,23 @@ OBJECTS_BETA      = groom_beta.o
 
 all: groom_master.hex groom_alpha.hex groom_beta.hex
 
-.c.o:
-	$(AVRGCC) -c $(CFLAGS) $< -o $@
+groom_master.o: groom_master.c
+	$(AVRGCC) -c $(CFLAGS) $(CFLAGS_MASTER) $< -o $@
+
+groom_alpha.o: groom_alpha.c
+	$(AVRGCC) -c $(CFLAGS) $(CFLAGS_ALPHA) $< -o $@
+
+groom_beta.o: groom_beta.c
+	$(AVRGCC) -c $(CFLAGS) $(CFLAGS_BETA) $< -o $@
+
+%_master.o: %.c
+	$(AVRGCC) -c $(CFLAGS) $(CFLAGS_MASTER) $< -o $@
+
+%_alpha.o: %.c
+	$(AVRGCC) -c $(CFLAGS) $(CFLAGS_ALPHA) $< -o $@
+
+%_beta.o: %.c
+	$(AVRGCC) -c $(CFLAGS) $(CFLAGS_BETA) $< -o $@
 
 flash_master: groom_master.hex
 	$(AVRDUDE) -U flash:w:groom_master.hex:i
