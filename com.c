@@ -32,7 +32,7 @@ char* com_requestdata(char DeviceDATAID){
 	
 	while (1) {
 		count++;
-		if(StrRxFlag || count>100){    //time_out
+		if(StrRxFlag || count>50000){    //time_out
 			if(StrRxFlag){
             	StrRxFlag=0;                // Reset String received flag
 				count=0;
