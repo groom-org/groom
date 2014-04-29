@@ -8,6 +8,8 @@
 
 #include "groom/usart.h"
 
+static uint8_t ms_total = 0;
+
 void usart_init()
 {
 	UBRR0 = F_UBRR;
@@ -23,6 +25,9 @@ void usart_init()
 	UCSR0B |= (1 << RXCIE0);	
 	sei();//enable interrupt
 	#endif
+
+	/* set the timer for the timeout call */
+	TCCR0B |= (1 << CS02) | (1 << CS00);
 }
 
 void usart_out(char ch)
@@ -35,6 +40,42 @@ char usart_in(void)
 {
 	while ( !(UCSR0A & (1 << RXC0)) );
 	return UDR0;
+}
+
+/*
+ * Call usart_in with a timeout of 'timeout'ms. If the
+ * communication succeeded it will set c to the value
+ * received and return 0. If the timout triggered or some other
+ * error occured it will return a nonzero value.
+ */
+uint8_t usart_in_timeout(char *c, uint16_t timeout)
+{
+	ms_total = 0;
+	/* reset the timer */
+	TCNT0 = 0;
+	/* enable the interrupt */
+	TIMSK0 |= (1 << TOIE0);
+	sei();
+
+	while ( !(UCSR0A & (1 << RXC0)) ) {
+		if (ms_total >= timeout) {
+			return 1;
+		}
+	}
+	/* disable the interrupt */
+	TIMSK0 &= ~(1 << TOIE0);
+	*c = UDR0;
+
+	return 0;
+}
+
+ISR(TIMER0_OVF_vect)
+{
+	if (ms_total == 254) {
+		ms_total = 255;
+		return;
+	}
+	ms_total += 2;
 }
 
 void usart_outstring(char *s)
