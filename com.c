@@ -3,74 +3,73 @@
 #include <util/delay.h>
 #include <avr/interrupt.h>
 
+#include "groom/com.h"
+
 #include "groom/usart_mux.h"
 #include "groom/usart.h"
 
-volatile int i=0;
-volatile uint8_t buffer[20];
-volatile uint8_t StrRxFlag=0;
-volatile uint8_t interruptstate=0; //interrupt state
-volatile char c; // communicatoin char
+/* timeout after 100ms */
+static uint8_t timeout = 100;
 
-char* com_requestdata(char DeviceDATAID){
-	//set deviceID
-	
-	if (DeviceDATAID=='3') {
-		usart_mux_set(0);
-		//PORTD &= ~(1 << PD2);  // Not pressed, LED off   select 0;
-	}else if (DeviceDATAID=='4') {
-		usart_mux_set(1);
-		//PORTD |= 1 << PD2;  // select 1;
-	}
-	_delay_ms(100);
-	
-	interruptstate=1;
-	sei();
-	
-	usart_out(DeviceDATAID);
-	
-	while (1) {
-		if(StrRxFlag){
-            StrRxFlag=0;                // Reset String received flag
-			return buffer;
-		}
-	}
-	
-	cli();
+/*
+ * Communication scheme:
+ * Request data:
+ *   Master sends single byte: bits 7-1 is the 7 bit data address.
+ *   Bit 0 is 1 since it is a read.
+ *   For example: to read from data address 3:
+ *      7 6 5 4 3 2 1 0
+ *      0 0 0 0 0 1 1 1
+ *   Slave sends:
+ *     An ACK for a successful read or a NACK for an unsuccessful one.
+ *     A single byte for the message if ACK. ACK is 0x00. NACK is 0x01.
+ *
+ * Send data:
+ *   Master sends a single byte: bits 7-1 is the 7 bit data address.
+ *   Bit 0 is 0 since it is a write.
+ *   For example to write to data address 3:
+ *     7 6 5 4 3 2 1 0
+ *     0 0 0 0 0 1 1 0
+ *   Master then waits for an ack from the device. A successful ACK should
+ *   be 0x00. A NACK should be 0x01.
+ *   
+ *   Master then sends data, which should be a single byte.
+ *
+ *   After the data is sent the master should wait for a final ACK.
+ */
+
+/* receive from address. Return 0 on success, 1 on failure. */
+uint8_t com_master_recv(uint8_t address)
+{
+
 }
 
-// heartbeat function
-uint8_t com_heartbeat(char DeviceID){	
-	//set deviceID
-	if (DeviceID=='1') {
-		usart_mux_set(0);
-		//PORTD &= ~(1 << PD2);  // Not pressed, LED off   select 0;
-	}else if (DeviceID=='2') {
-		usart_mux_set(1);
-		//PORTD |= 1 << PD2;  // select 1;
-	}
-	
-	_delay_ms(100);
-	
-	int count;
-	interruptstate=0;
-	sei();//enable interrupt
-	usart_out(DeviceID);
-	for(count=0;count<2000;count++){
-		if (c=='R') {
-			c='0';
-			return 1;
-		}
-		if (c=='r') {
-			c='0';
-			return 2;
-		}
-	}
-	c='0';
-	cli();
-	return 0;
+/* send the data to the given address. Return 0 on success. */
+uint8_t com_master_send(uint8_t address, uint8_t value)
+{
+
 }
 
+uint8_t com_slave_wait_for_request(uint8_t *address)
+{
+
+}
+
+uint8_t com_slave_recv(uint8_t *data)
+{
+
+}
+
+uint8_t com_slave_send(uint8_t value)
+{
+
+}
+
+uint8_t com_set_timeout(uint8_t val)
+{
+	timeout = val;
+}
+
+/*
 //interrupt handler
 ISR(USART_RX_vect)
 {
@@ -95,3 +94,4 @@ ISR(USART_RX_vect)
 			break;
 	}	
 }
+*/
