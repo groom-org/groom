@@ -110,6 +110,10 @@ uint8_t com_slave_nack()
 	
 }
 
+/*
+ * Set the timeout in ms. This isn't the timeout of the whole function,
+ * but is the timeout of the individual parts.
+ */
 uint8_t com_set_timeout(uint8_t val)
 {
 	timeout = val;
