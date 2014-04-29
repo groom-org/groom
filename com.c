@@ -8,7 +8,7 @@
 #include "groom/usart_mux.h"
 #include "groom/usart.h"
 
-/* timeout after 100ms */
+/* timeout after 100ms by default */
 static uint8_t timeout = 100;
 
 /*
@@ -37,61 +37,80 @@ static uint8_t timeout = 100;
  *   After the data is sent the master should wait for a final ACK.
  */
 
-/* receive from address. Return 0 on success, 1 on failure. */
-uint8_t com_master_recv(uint8_t address)
+/*
+ * Receive from the given address as a master. On success the uint8_t pointed
+ * to by value will be set to the received value.
+ *
+ * Returns 0 on success.
+ * Returns 1 on timeout
+ * Returns 2 on NACK.
+ */
+uint8_t com_master_recv(uint8_t address, uint8_t *value)
 {
 
 }
 
-/* send the data to the given address. Return 0 on success. */
+/*
+ * Send to the given address as a master. On success value will be
+ * written to the device's address.
+ *
+ * Returns 0 on success.
+ * Returns 1 on timeout.
+ * Returns 2 on NACK.
+ */
 uint8_t com_master_send(uint8_t address, uint8_t value)
 {
 
 }
 
+/*
+ * Wait for a request as a slave. If the slave receives a request the
+ * value pointed to by address will be set to the address requested,
+ * including the read/write bit. You can check for the read/write bit
+ * easily using the COM_IS_READ function and you can strip out this
+ * bit from the address with COM_MASK_ADDRESS.
+ *
+ * Returns 0 on success.
+ * Returns 1 on timeout.
+ */
 uint8_t com_slave_wait_for_request(uint8_t *address)
 {
 
 }
 
+/*
+ * Perform a slave receive (a master send) and store the data received in data.
+ *
+ * Returns 0 on success.
+ * Returns 1 on timeout.
+ */
 uint8_t com_slave_recv(uint8_t *data)
 {
 
 }
 
+/*
+ * Perform a slave send (a master receive) by sending the value passed in.
+ * The required ack is automatically sent as well.
+ *
+ * Returns 0.
+ */
 uint8_t com_slave_send(uint8_t value)
 {
 
+}
+
+/*
+ * Send a nack from a slave to indicate an invalid address
+ * 
+ * Returns 0.
+ */
+uint8_t com_slave_nack()
+{
+	
 }
 
 uint8_t com_set_timeout(uint8_t val)
 {
 	timeout = val;
 }
-
-/*
-//interrupt handler
-ISR(USART_RX_vect)
-{
-	switch (interruptstate) {
-		case 0:
-			while (!(UCSR0A & (1<<RXC0)));
-			c=UDR0;         //Read USART data register
-			break;
-		case 1:
-			while (!(UCSR0A & (1<<RXC0)));
-			buffer[i]=UDR0;         //Read USART data register
-			if(buffer[i++]=='\r')   //check for carriage return terminator and increment buffer index
-			{
-				// if terminator detected
-				StrRxFlag=1;        //Set String received flag
-				buffer[i-1]=0x00;   //Set string terminator to 0x00
-				i=0;                //Reset buffer index
-				interruptstate=0;
-			}
-			break;
-		default:
-			break;
-	}	
-}
-*/
