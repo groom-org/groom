@@ -81,12 +81,14 @@ void setup();
 
 // data sender temp
 void gettempdata(){
-
-	
+	_delay_ms(500);
+	usart_outstring(buf);
+	setup();
 	int i;
+	_delay_ms(500);
 	buf[0] = '\0';
 	
-	for(i=0;i<2;i++){
+	for(i=0;i<5;i++){
 		
 		int tC, tFrac;
 		tC = getHrTemp();                             // read high-resolution temperature
@@ -155,11 +157,9 @@ int main(void)
 {
 	/* for 9600 baud on with 9.304MHz clock */
 	usart_init(63);
-	setup();
 	PORTC |= (1 << PC1);        // Enable pull-up for switch on PORTC bit 1
 	buf[0] = '\0';
-	_delay_ms(1000);
-
+		
 	while(1){
 		if (PINC & (1 << PC1))
 			motion=1;
