@@ -31,6 +31,7 @@ volatile uint8_t buffer[20];
 volatile uint8_t StrRxFlag=0;
 volatile char c='0';
 char buf[256]; //string for thermometer
+volatile uint8_t interruptstate=0; //interrupt state
 
 // Find divisors for the UART0 and I2C baud rates
 
@@ -81,9 +82,9 @@ void setup();
 
 // data sender temp
 void gettempdata(){
-
 	
 	int i;
+	_delay_ms(500);
 	buf[0] = '\0';
 	
 	for(i=0;i<2;i++){
@@ -121,6 +122,34 @@ void senddata(){
 	
 }
 
+void receivecommand(){
+	int count=0;
+	
+	while (1) {
+		_delay_ms(10);
+		count++;
+		if(StrRxFlag || count>100){    //time_out
+			if(StrRxFlag){
+            	StrRxFlag=0;                // Reset String received flag
+				count=0;
+				usart_outstring(buffer);
+				return buffer;
+			}else{
+				sprintf(buffer,"TIME_OUT");
+				count=0;
+				i=0;  
+				interruptstate=0;              //Reset buffer index
+				usart_outstring(buffer);
+				return buffer;
+			}
+			
+		}
+	}
+	
+	//set relays
+	
+	
+} 
 
 void usart_init(unsigned short ubrr)
 {
@@ -155,19 +184,27 @@ int main(void)
 {
 	/* for 9600 baud on with 9.304MHz clock */
 	usart_init(63);
+	//PORTC |= (1 << PC1);        // Enable pull-up for switch on PORTC bit 1
 	setup();
-	PORTC |= (1 << PC1);        // Enable pull-up for switch on PORTC bit 1
 	buf[0] = '\0';
-	_delay_ms(1000);
-
+	
 	while(1){
 		if (PINC & (1 << PC1))
 			motion=1;
 		else {
 			motion=0;
 		}
-	};
 		
+		switch(interruptstate){
+			case 1:
+				receivecommand();
+				break;
+			default:
+				break;
+		}
+		
+	};
+	
 }
 
 //I2C things, don't touch!
@@ -473,21 +510,42 @@ int getHrTemp()
 //interrpt handler
 ISR(USART_RX_vect)
 {
-	while (!(UCSR0A & (1<<RXC0)));
-	c=UDR0; 
-	//Read USART data register
-	switch (c) {
-		case '1':
-			if (motion==1) {
-				usart_out('r');  //motion detected
-			}else{
-				usart_out('R');  //no motion detected
+	switch(interruptstate){
+		case 0:
+			while (!(UCSR0A & (1<<RXC0)));
+			c=UDR0; 
+			//Read USART data register
+			switch (c) {
+				case '1':
+					if (motion==1) {
+						usart_out('r');  //motion detected
+					}else{
+						usart_out('R');  //no motion detected
+					}
+					break;
+				case '3':
+					gettempdata();   //receive data request
+					break;
+				case '5':
+					interruptstate=1;
+					usart_out('A');
+				    break;
+				default:
+					break;
 			}
 			break;
-		case '3':
-			gettempdata();   //receive data request
-		default:
-			break;
+		case 1:
+			while (!(UCSR0A & (1<<RXC0)));
+			buffer[i]=UDR0;         //Read USART data register
+			if(buffer[i++]=='\r')   //check for carriage return terminator and increment buffer index
+			{
+				// if terminator detected
+				StrRxFlag=1;        //Set String received flag
+				buffer[i-1]=0x00;   //Set string terminator to 0x00
+				i=0;  
+				interruptstate=0;              //Reset buffer index
+			}
+			break;	
 	}
 	
 }

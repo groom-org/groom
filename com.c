@@ -7,14 +7,62 @@
 #include "groom/usart.h"
 
 volatile int i=0;
-volatile uint8_t buffer[20];
-volatile uint8_t StrRxFlag=0;
+volatile uint8_t buffer[20]; //buffer for data passing
+volatile uint8_t StrRxFlag=0; 
 volatile uint8_t interruptstate=0; //interrupt state
-volatile char c; // communicatoin char
+volatile char c; // char for com protocol
+
+
+/*
+	Sending data, enter DeviceSendID and string pointer.
+	Data will be sent as a string to the slave board and should end with \r
+	'5' is for slave alpha '6' is for beta
+	will return 1 if send successfully, 0 if fail
+
+	sample usage
+
+	uint8_t status;
+	char control[50];
+	sprintf(control,"ASMDSFE");
+	status=com_sendata('5',control);
+
+*/
+uint8_t com_senddata(char DeviceSendID, char * data_send){
+	
+	if (DeviceSendID=='5') {
+		PORTD &= ~(1 << PD2);  // Not pressed, LED off   select 0;
+	}else if (DeviceSendID=='6') {
+		PORTD |= 1 << PD2;  // select 1;
+	}
+
+	_delay_ms(100);
+	
+	int count;
+	interruptstate=0;
+	sei();//enable interrupt
+	
+	usart_out(DeviceSendID);
+	
+	_delay_ms(100);
+	
+	for(count=0;count<100;count++){
+		_delay_ms(10);
+		if (c=='A') {
+			c='0';
+			usart_outstring(data_send);
+			return 1;
+		}
+	}
+	c='0';
+	cli();
+	return 0;
+	
+}
+
 
 char* com_requestdata(char DeviceDATAID){
 	//set deviceID
-	int count;
+	int count=0;
 	
 	if (DeviceDATAID=='3') {
 		usart_mux_set(0);
@@ -24,13 +72,13 @@ char* com_requestdata(char DeviceDATAID){
 		//PORTD |= 1 << PD2;  // select 1;
 	}
 	_delay_ms(100);
-	
 	interruptstate=1;
+	usart_out(DeviceDATAID);
 	sei();
 	
-	usart_out(DeviceDATAID);
 	
 	while (1) {
+		_delay_ms(10);
 		count++;
 		if(StrRxFlag || count>100){    //time_out
 			if(StrRxFlag){
@@ -38,11 +86,11 @@ char* com_requestdata(char DeviceDATAID){
 				count=0;
 				return buffer;
 			}else{
-				sprintf(buffer,"TIME_OUT\r");
+				sprintf(buffer,"TIME_OUT");
 				count=0;
 				i=0;                //Reset buffer index
 				interruptstate=0;
-				return buffer
+				return buffer;
 			}
 			
 		}
@@ -68,7 +116,8 @@ uint8_t com_heartbeat(char DeviceID){
 	interruptstate=0;
 	sei();//enable interrupt
 	usart_out(DeviceID);
-	for(count=0;count<1000;count++){
+	for(count=0;count<100;count++){
+		_delay_ms(10);
 		if (c=='R') {
 			c='0';
 			return 1;
