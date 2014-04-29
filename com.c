@@ -14,7 +14,6 @@ volatile char c; // communicatoin char
 
 char* com_requestdata(char DeviceDATAID){
 	//set deviceID
-	int count;
 	
 	if (DeviceDATAID=='3') {
 		usart_mux_set(0);
@@ -42,9 +41,14 @@ char* com_requestdata(char DeviceDATAID){
 				count=0;
 				i=0;                //Reset buffer index
 				interruptstate=0;
-				return buffer
+				return buffer;
 			}
 			
+
+		if(StrRxFlag){
+            StrRxFlag=0;                // Reset String received flag
+			return buffer;
+
 		}
 	}
 	
@@ -68,7 +72,7 @@ uint8_t com_heartbeat(char DeviceID){
 	interruptstate=0;
 	sei();//enable interrupt
 	usart_out(DeviceID);
-	for(count=0;count<1000;count++){
+	for(count=0;count<2000;count++){
 		if (c=='R') {
 			c='0';
 			return 1;
