@@ -67,18 +67,18 @@ uint16_t read_adc(uint8_t channel){
 //Thermostat controls
 //PC5: Cool - Blue Wire - Light Three
 //PC4: Heat - Green Wire - Light Two
-//PC2: Fan - Yellow Wire - Light One
+//PC3: Fan - Yellow Wire - Light One
 //
 void thermo_fan_on()
 {
   usart_printf("Turning Fan On\r\n");
-  PORTC |= (1 << PC2);      // Set PC2 to a 1
+  PORTC |= (1 << PC3);      // Set PC3 to a 1
 }
 
 void thermo_fan_off()
 {
   usart_printf("Turning Fan Off\r\n");
-  PORTC &= ~(1 << PC2);  //Set PC2 to 0
+  PORTC &= ~(1 << PC3);  //Set PC3 to 0
 }
 
 void thermo_turn_off()
