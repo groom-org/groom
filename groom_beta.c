@@ -35,6 +35,19 @@ volatile char c='0';
 #define BDIV (FOSC / 100000 - 16) / 2 + 1    // Puts I2C rate just below 100kHz
 // device ID and address
 
+//I/O init
+void io_pin_init()
+{
+  usart_outstring("Initializing I/O pins...\r\n");
+
+  DDRC |= 1 << DDC0;          // Set PORTC bit 0 for output
+  DDRC |= 1 << DDC2;          // Set PORTC bit 3 for output
+  DDRC |= 1 << DDC4;          // Set PORTC bit 4 for output
+  DDRC |= 1 << DDC5;          // Set PORTC bit 5 for output
+
+  DDRC = 0xff;
+}
+
 //adc 
 void adc_init(void){ 
 	ADCSRA |= ((1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0));    //16Mhz/128 = 125Khz the ADC reference clock
@@ -50,6 +63,46 @@ uint16_t read_adc(uint8_t channel){
 	return ADCW;                    //Returns the ADC value of the chosen channel
 }
 
+
+//Thermostat controls
+//PC5: Cool - Blue Wire - Light Three
+//PC4: Heat - Green Wire - Light Two
+//PC2: Fan - Yellow Wire - Light One
+//
+void thermo_fan_on()
+{
+  usart_printf("Turning Fan On\r\n");
+  PORTC |= (1 << PC2);      // Set PC2 to a 1
+}
+
+void thermo_fan_off()
+{
+  usart_printf("Turning Fan Off\r\n");
+  PORTC &= ~(1 << PC2);  //Set PC2 to 0
+}
+
+void thermo_turn_off()
+{
+  usart_printf("Turning All Systems Off\r\n");
+  PORTC &= ~(1 << PC4);  //Set PC4 to 0
+  PORTC &= ~(1 << PC5);  //Set PC5 to 0
+}
+
+void thermo_call_for_heat()
+{
+  thermo_turn_off();
+  usart_printf("Turning Heat On\r\n");
+  PORTC |= (1 << PC4);  //Set PC4 to 1
+}
+
+void thermo_call_for_cool()
+{
+  thermo_turn_off();
+  usart_printf("Turning Cool On\r\n");
+  PORTC |= (1 << PC5);  //Set PC5 to 1
+}
+
+
 // data sender general
 void senddata(){
 	
@@ -64,12 +117,58 @@ void senddata(){
 
 int main(void)
 {
-	/* for 9600 baud on with 9.304MHz clock */
-	usart_init();
-	adc_init();
-		
-	while(1);
-		
+  int command = 0;
+
+  /* for 9600 baud on with 9.304MHz clock */
+  usart_init();
+  adc_init();
+  io_pin_init();
+
+  
+  while(1)
+  {
+    //usart_printf("Looping... command=%d\r\n", command);
+
+    if(command % 2 == 0) 
+    {
+      PORTC |= 1 << PC0;   
+    }
+    else 
+    {
+      PORTC &= ~(1 << PC0);
+    }
+
+    switch(command)
+    {
+    case 0:
+      thermo_call_for_cool();
+      break;
+    case 1:
+      thermo_fan_on();
+      break;
+    case 2:
+      thermo_call_for_heat();
+      break;
+    case 3:
+      thermo_fan_off();
+      break;
+    default:
+    case 4:
+      thermo_turn_off();
+      break;
+    }
+
+    _delay_ms(500);
+
+
+    command = command + 1;
+    if(command == 5)
+    {
+	command = 0;
+    }
+
+  } 
+    
 }
 
 //interrpt handler
