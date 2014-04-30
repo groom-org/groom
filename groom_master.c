@@ -13,6 +13,9 @@
 #include "groom/usart_mux.h"
 #include "groom/com.h"
 
+#define TEMP_SET_STRING "Manual Temperature:"
+#define LIGHT_SET_STRING "Manual Lights:"
+
 struct status_item {
 	char *label;
 	char *format_string;
@@ -131,6 +134,7 @@ int main(void)
 			NULL
 		}
 	};
+	
 	int nitems = sizeof(mitems) / sizeof(mitems[0]);
 	int options_yloc = (nitems + 2) * 8;
 
@@ -140,18 +144,27 @@ int main(void)
 	tft_set_cursor(8 * 2, options_yloc);
 	tft_println("Set Temperature");
 	tft_set_cursor(8 * 2, options_yloc + 8);
-	tft_println("Do something else");
+	tft_println("Set Lights");
 	tft_set_cursor(8 * 2, options_yloc + 16);
-	tft_println("Do yet another thing");
+	for (int i = 0; i < ILI9341_TFTWIDTH / 6; i++) {
+		tft_text_write('=');
+	}
+	uint8_t manual_temp = 70;
+	tft_set_cursor(8 * 2, options_yloc + 24);
+	tft_println(TEMP_SET_STRING);
+	tft_set_cursor(8 * 2 + 8 * strlen(TEMP_SET_STRING), options_yloc + 24);
+	tft_println(" 70");
+	uint8_t manual_light = 1; //1 on, 0 off
+	tft_set_cursor(8 * 2, options_yloc + 32);
+	tft_println(LIGHT_SET_STRING);
+	tft_set_cursor(8 * 2 + 8 * strlen(LIGHT_SET_STRING), options_yloc + 32);
+	tft_println(" ON");
 
 	init_status(mitems, nitems, 0, 0);
 
 	int cur_option = 0;
-	int num_options = 3;
+	int num_options = 2;
 	int last_encoder_val = encoder_val();
-
-	uint16_t i = 0;
-
 	for(;;) {
 		update_status(mitems, nitems, 0, 0);
 		int new_encoder_val = encoder_val();
@@ -174,6 +187,55 @@ int main(void)
 			tft_set_cursor(0, options_yloc + 8 * cur_option);
 			tft_text_write('>');
 		}
+		if(button_was_pressed()){ 
+			int last_enc_val = encoder_val();
+			int new_enc_val;
+			switch(cur_option){
+				case 0: //temperature
+					tft_set_cursor(0, options_yloc + 24);
+					tft_println("> ");
+					tft_set_cursor(8*2 + 8 * strlen(TEMP_SET_STRING), options_yloc + 24);
+					while(!button_was_pressed()){
+						new_enc_val = encoder_val();
+						if (new_enc_val > last_enc_val) {
+							manual_temp++;
+							tft_printf(" %d", manual_temp);
+						} else if (new_encoder_val < last_encoder_val) {
+							manual_temp--;
+							tft_printf(" %d", manual_temp);
+						}
+						//////
+						//send command to board alpha
+						
+						//////
+						last_enc_val = new_enc_val;
+					}
+					break;
+				case 1: //lights
+					tft_set_cursor(0, options_yloc + 32);
+					tft_println("> ");
+					tft_set_cursor(8*2 + 8 * strlen(LIGHT_SET_STRING), options_yloc + 32);
+					while(!button_was_pressed()){
+						int new_enc_val = encoder_val();
+						if (new_enc_val != last_enc_val) {
+							manual_light = !manual_light;
+							if(manual_light){
+								tft_println("ON");
+							}
+							else{
+								tft_println("OFF");
+							}
+							///////
+							//send command to board alpha
+							
+							///////
+						}
+						last_enc_val = new_enc_val;
+					}
+					break;
+			}
+		}
+		tft_set_cursor(0, options_yloc + 8 * cur_option);
 
 		/*
 		tft_set_cursor(half_width, 8);
@@ -200,10 +262,6 @@ int main(void)
 			usart_out(c);
 		}
 		*/
-		if (i % 20 == 0) {
-			com_senddata(SEND_ALPHA, "hello, world\r");
-		}
-		i++;
 	}
 }
 
@@ -258,7 +316,7 @@ char *get_temp()
 char *get_photodiode()
 {
 	static int i = 0;
-	static char buf[16];
+	static char buf[9];
 
 	if (i != 5) {
 		i++;
