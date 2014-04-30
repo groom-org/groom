@@ -22,8 +22,8 @@ void button_init(void)
 
 uint8_t button_was_pressed(void)
 {
-	if (button_pressed) {
-		button_pressed = 0;
+	if (button_pressed_stack) {
+		button_pressed_stack = 0;
 		return 1;
 	}
 
