@@ -314,7 +314,6 @@ char *get_temp()
 		temp_val=atof(buf);
 		return buf;
 	} else {
-		temp_val=atof(buf);
 		return buf;
 	}
 }
@@ -337,7 +336,6 @@ char *get_photodiode()
 		pd_val=atof(buf);
 		return buf;
 	} else {
-		pd_val=atof(buf);
 		return buf;
 	}
 }
