@@ -44,6 +44,20 @@ volatile uint8_t interruptstate=0; //interrupt state
 #define DEV_ADDR   0x00 
 #define SLAVE_ID   DEV_TYPE | DEV_ADDR
 
+//!! This protocol should be used in all uP.
+#define HB_ALPHA '1'
+#define HB_BETA '2'
+#define READ_ALPHA '3'
+#define READ_BETA '4'
+#define SEND_ALPHA '5'
+#define SEND_BETA '6'
+#define ACK 'A'
+#define ACTIVE_RESPONSE 'R'
+#define ACTIVE_RESPONSE_MOTION 'r'
+#define DEFAULT '0' 
+#define COMMAND_MODE 0
+#define TRANSMIT_MODE 1
+
 // DS1621 Registers & Commands
 
 uint8_t RD_TEMP   = 0xAA;                         // read temperature register
@@ -63,9 +77,6 @@ uint8_t TLF        =0x20;                    // low temp flag
 uint8_t NVB        =0x10;                    // non-volatile memory is busy
 uint8_t POL        =0x02;                    // output polarity (1 = high, 0 = low)
 uint8_t ONE_SHOT   =0x01;                    // 1 = one conversion; 0 = continuous conversion
-
-// motion flag
-
 uint8_t motion=0;
 
 //thermometer functions
@@ -79,6 +90,11 @@ void startConversion(int);
 uint8_t getReg(uint8_t);
 void setConfig(uint8_t);
 void setup();
+
+
+void control(char *command){
+	//do whatever you want
+}
 
 // data sender temp
 void gettempdata(){
@@ -111,15 +127,7 @@ void gettempdata(){
 		
 	}
 	usart_outstring(buf);
-    c='0';
-}
-
-// data sender general
-void senddata(){
-	
-	usart_outstring("HANXIAO\r");
-	c='0';
-	
+    c=DEFAULT;
 }
 
 void receivecommand(){
@@ -132,22 +140,18 @@ void receivecommand(){
 			if(StrRxFlag){
             	StrRxFlag=0;                // Reset String received flag
 				count=0;
-				usart_outstring(buffer);
-				return buffer;
 			}else{
 				sprintf(buffer,"TIME_OUT");
 				count=0;
 				i=0;  
-				interruptstate=0;              //Reset buffer index
-				usart_outstring(buffer);
-				return buffer;
+				interruptstate=COMMAND_MODE;              //Reset buffer index
 			}
 			
 		}
 	}
 	
 	//set relays
-	
+	control(buffer);
 	
 } 
 
@@ -184,7 +188,6 @@ int main(void)
 {
 	/* for 9600 baud on with 9.304MHz clock */
 	usart_init(63);
-	//PORTC |= (1 << PC1);        // Enable pull-up for switch on PORTC bit 1
 	setup();
 	buf[0] = '\0';
 	
@@ -196,7 +199,7 @@ int main(void)
 		}
 		
 		switch(interruptstate){
-			case 1:
+			case TRANSMIT_MODE:
 				receivecommand();
 				break;
 			default:
@@ -511,30 +514,30 @@ int getHrTemp()
 ISR(USART_RX_vect)
 {
 	switch(interruptstate){
-		case 0:
+		case COMMAND_MODE:
 			while (!(UCSR0A & (1<<RXC0)));
 			c=UDR0; 
 			//Read USART data register
 			switch (c) {
-				case '1':
+				case HB_ALPHA:
 					if (motion==1) {
-						usart_out('r');  //motion detected
+						usart_out(ACTIVE_RESPONSE_MOTION);  //motion detected
 					}else{
-						usart_out('R');  //no motion detected
+						usart_out(ACTIVE_RESPONSE);  //no motion detected
 					}
 					break;
-				case '3':
+				case READ_ALPHA:
 					gettempdata();   //receive data request
 					break;
-				case '5':
-					interruptstate=1;
-					usart_out('A');
+				case SEND_ALPHA:
+					interruptstate=TRANSMIT_MODE;
+					usart_out(ACK);
 				    break;
 				default:
 					break;
 			}
 			break;
-		case 1:
+		case TRANSMIT_MODE:
 			while (!(UCSR0A & (1<<RXC0)));
 			buffer[i]=UDR0;         //Read USART data register
 			if(buffer[i++]=='\r')   //check for carriage return terminator and increment buffer index
@@ -543,7 +546,7 @@ ISR(USART_RX_vect)
 				StrRxFlag=1;        //Set String received flag
 				buffer[i-1]=0x00;   //Set string terminator to 0x00
 				i=0;  
-				interruptstate=0;              //Reset buffer index
+				interruptstate=COMMAND_MODE;              //Reset buffer index
 			}
 			break;	
 	}
