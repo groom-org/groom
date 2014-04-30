@@ -95,7 +95,7 @@ void receivecommand(){
 	while (1) {
 		_delay_ms(10);
 		count++;
-		if(StrRxFlag || count>100){    //time_out
+		if(StrRxFlag || count>200){    //time_out
 			if(StrRxFlag){
             	StrRxFlag=0;                // Reset String received flag
 				count=0;
