@@ -13,7 +13,6 @@ volatile uint8_t StrRxFlag=0;
 volatile uint8_t interruptstate=0; //interrupt state
 volatile char c; // char for com protocol
 
-
 /*
 	Sending data, enter DeviceSendID and string 	pointer.
 	Data will be sent as a string to the slave board and should end with \r
