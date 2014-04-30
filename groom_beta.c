@@ -130,7 +130,7 @@ int main(void)
 	adc_init();
 	
 	while(1){
-
+		
 		switch(interruptstate){
 			case 1:
 				receivecommand();
@@ -152,11 +152,7 @@ ISR(USART_RX_vect)
 			//Read USART data register
 			switch (c) {
 				case '2':
-					if (motion==1) {
-						usart_out('r');  //motion detected
-					}else{
-						usart_out('R');  //no motion detected
-					}
+					usart_out('R');  //no motion detected
 					break;
 				case '4':
 					senddata();   //receive data request
