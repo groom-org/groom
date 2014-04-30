@@ -73,10 +73,7 @@ uint8_t com_senddata(char DeviceSendID, char * data_send){
 
 char* com_requestdata(char DeviceDATAID){
 	//set deviceID
-<<<<<<< HEAD
-=======
 	int count=0;
->>>>>>> han_code
 	
 	if (DeviceDATAID==READ_ALPHA) {
 		usart_mux_set(0);
@@ -103,19 +100,9 @@ char* com_requestdata(char DeviceDATAID){
 				sprintf(buffer,"TIME_OUT");
 				count=0;
 				i=0;                //Reset buffer index
-<<<<<<< HEAD
-				interruptstate=0;
-=======
 				interruptstate=COMMAND_MODE;
->>>>>>> han_code
 				return buffer;
 			}
-			
-
-		if(StrRxFlag){
-            StrRxFlag=0;                // Reset String received flag
-			return buffer;
-
 		}
 	}
 	
@@ -137,17 +124,11 @@ uint8_t com_heartbeat(char DeviceID){
 	interruptstate=COMMAND_MODE;
 	sei();//enable interrupt
 	usart_out(DeviceID);
-<<<<<<< HEAD
-	for(count=0;count<2000;count++){
-		if (c=='R') {
-			c='0';
-=======
 
 	for(count=0;count<100;count++){
 		_delay_ms(10);
 		if (c==ACTIVE_RESPONSE) {
 			c=DEFAULT;
->>>>>>> han_code
 			return 1;
 		}
 		if (c==ACTIVE_RESPONSE_MOTION) {
