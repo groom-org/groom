@@ -146,7 +146,7 @@ void receivecommand(){
 				i=0;  
 				interruptstate=COMMAND_MODE;              //Reset buffer index
 			}
-			
+			break;
 		}
 	}
 	
