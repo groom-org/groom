@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
+
+#include "groom/com.h"
 #include "groom/usart_mux.h"
 #include "groom/usart.h"
 
@@ -11,22 +13,9 @@ volatile uint8_t StrRxFlag=0;
 volatile uint8_t interruptstate=0; //interrupt state
 volatile char c; // char for com protocol
 
-//!! This protocol should be used in all uP.
-#define HB_ALPHA '1'
-#define HB_BETA '2'
-#define READ_ALPHA '3'
-#define READ_BETA '4'
-#define SEND_ALPHA '5'
-#define SEND_BETA '6'
-#define ACK 'A'
-#define ACTIVE_RESPONSE 'R'
-#define ACTIVE_RESPONSE_MOTION 'r'
-#define DEFAULT '0' 
-#define COMMAND_MODE 0
-#define TRANSMIT_MODE 1
 
 /*
-	Sending data, enter DeviceSendID and string pointer.
+	Sending data, enter DeviceSendID and string 	pointer.
 	Data will be sent as a string to the slave board and should end with \r
 	'5' is for slave alpha '6' is for beta
 	will return 1 if send successfully, 0 if fail

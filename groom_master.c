@@ -150,6 +150,8 @@ int main(void)
 	int num_options = 3;
 	int last_encoder_val = encoder_val();
 
+	uint16_t i = 0;
+
 	for(;;) {
 		update_status(mitems, nitems, 0, 0);
 		int new_encoder_val = encoder_val();
@@ -198,6 +200,10 @@ int main(void)
 			usart_out(c);
 		}
 		*/
+		if (i % 20 == 0) {
+			com_senddata(SEND_ALPHA, "hello, world\r");
+		}
+		i++;
 	}
 }
 
@@ -252,7 +258,7 @@ char *get_temp()
 char *get_photodiode()
 {
 	static int i = 0;
-	static char buf[9];
+	static char buf[16];
 
 	if (i != 5) {
 		i++;
