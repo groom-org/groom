@@ -15,10 +15,14 @@
 #define COMMAND_MODE 0
 #define TRANSMIT_MODE 1
 
-/* reserve char com '1' '2' '3' '4' 'R' 'A' */
+//request data
 char* com_requestdata(char DeviceDATAID);
 
 /* heartbeat function */
 uint8_t com_heartbeat(char DeviceID);
+
+//send data
+uint8_t com_senddata(char DeviceSendID, char * data_send);
+
 
 #endif /* GROOM_COM_H_ */
