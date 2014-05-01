@@ -255,9 +255,15 @@ int main(void)
 				manual_light = !manual_light;
 				if(manual_light){
 					tft_println("ON");
+					char buf[2];
+					sprintf(buf, "%c", LIGHTS_FULL);
+					com_senddata(SEND_BETA, buf);
 				}
 				else{
 					tft_println("OFF");
+					char buf[2];
+					sprintf(buf, "%c", LIGHTS_OFF);
+					com_senddata(SEND_BETA, buf);
 				}
 				///////
 				//send command to board alpha
