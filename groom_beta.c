@@ -138,26 +138,19 @@ uint8_t button_val(void)
 
 ISR(PCINT0_vect)
 {
-	usart_printf("INTERRUPTED thing buttonpressed = %d, button_val = %d, buttonstate = %d \r\n", button_pressed, button_val(), buttonstate);
-	if (button_pressed) {
-		if (button_val() == 0) {
-			_delay_ms(2);
-			if (button_val() == 0) {
-				button_pressed = 0;
-			}
-		}
-	} else {
-		if (button_val() == 1) {
-			_delay_ms(2);
-			if (button_val() == 1) {
-				button_pressed = 1;
-				button_pressed_stack = 1;
-				buttonstate = buttonstate + 1;
-				if (buttonstate == 4)
-					buttonstate = 0;
-			}
-		}
+	
+	if (button_val() == 0) {
+		button_pressed = 0;
 	}
+	else {
+		button_pressed = 1;
+		buttonstate = buttonstate + 1;
+		if (buttonstate == 4)
+			buttonstate = 0;
+	}
+	
+	usart_printf("INTERRUPTED thing buttonpressed = %d, button_val = %d, buttonstate = %d \r\n", button_pressed, button_val(), buttonstate);
+
 }
 
 //Thermostat controls
