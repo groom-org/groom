@@ -434,30 +434,3 @@ char *get_s2_status()
 	return "inactive";
 }
 
-int analyze_time(){
-	if (hours>08&&hours<19){
-		return 1;
-	}
-	return 0;
-}
-
-int analyze_temp() {
-	char* temp_temp;
-	temp_temp=get_temp;
-	double temp;
-	temp = atof(temp_temp);
-	if (temp>75) {
-		return 0;
-		}
-	if (temp<65) {
-		return 1;
-		}
-	return 2;
-}
-
-int analyze_motion() {
-	if (motion_on) {
-		return 1;
-		}
-	return 0;
-}
