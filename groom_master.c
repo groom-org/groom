@@ -221,13 +221,13 @@ int main(void)
 	uint8_t manual_temp = 70;
 	tft_set_cursor(8 * 2, options_yloc + 24);
 	tft_println(TEMP_SET_STRING);
-	tft_set_cursor(8 * 2 + 8 * strlen(TEMP_SET_STRING), options_yloc + 24);
-	tft_println(" 70");
+	tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 24);
+	tft_println("70");
 	uint8_t manual_light = 1; //1 on, 0 off
 	tft_set_cursor(8 * 2, options_yloc + 32);
 	tft_println(LIGHT_SET_STRING);
-	tft_set_cursor(8 * 2 + 8 * strlen(LIGHT_SET_STRING), options_yloc + 32);
-	tft_println(" ON");
+	tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 32);
+	tft_println("ON");
 
 	init_status(mitems, nitems, 0, 0);
 
@@ -273,13 +273,13 @@ int main(void)
 		else if(menu_state == MANUAL_TEMP){
 			tft_set_cursor(0, options_yloc + 24);
 			tft_println("> ");
-			tft_set_cursor(8*2 + 8 * strlen(TEMP_SET_STRING), options_yloc + 24);
+			tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 24);
 			if (new_encoder_val > last_encoder_val) {
 				manual_temp++;
-				tft_printf(" %d", manual_temp);
+				tft_printf("%d ", manual_temp);
 			} else if (new_encoder_val < last_encoder_val) {
 				manual_temp--;
-				tft_printf(" %d", manual_temp);
+				tft_printf("%d ", manual_temp);
 			}
 			//////
 			//send command to board alpha
@@ -297,12 +297,12 @@ int main(void)
 		else if(menu_state == MANUAL_LIGHT){
 			tft_set_cursor(0, options_yloc + 32);
 			tft_println("> ");
-			tft_set_cursor(8*2 + 8 * strlen(LIGHT_SET_STRING), options_yloc + 32);
+			tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 32);
 			//int new_enc_val = encoder_val();
 			if (new_encoder_val != last_encoder_val) {
 				manual_light = !manual_light;
 				if(manual_light){
-					tft_println("ON");
+					tft_println("ON ");
 					char buf[2];
 					sprintf(buf, "%c\r", LIGHTS_FULL);
 					com_senddata(SEND_BETA, buf);
