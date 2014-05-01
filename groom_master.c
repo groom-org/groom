@@ -34,6 +34,9 @@ char *get_photodiode();
 char *get_motion();
 void init_status(struct status_item *items, size_t n, int x, int y);
 void update_status(struct status_item *items, size_t n, int x, int y);
+int analyze_temp();
+int analyze_motion();
+int analyze_time();
 
 uint8_t temp_hb = 0;
 uint8_t pd_hb = 0;
@@ -425,4 +428,32 @@ char *get_s2_status()
 
 	pd_hb = 0;
 	return "inactive";
+}
+
+int analyze_time(){
+	if (hours>08&&hours<19){
+		return 1;
+	}
+	return 0;
+}
+
+int analyze_temp() {
+	char* temp_temp;
+	temp_temp=get_temp;
+	double temp;
+	temp = atof(temp_temp);
+	if (temp>75) {
+		return 0;
+		}
+	if (temp<65) {
+		return 1;
+		}
+	return 2;
+}
+
+int analyze_motion() {
+	if (motion_on) {
+		return 1;
+		}
+	return 0;
 }
