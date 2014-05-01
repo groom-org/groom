@@ -15,6 +15,19 @@
 #define COMMAND_MODE 0
 #define TRANSMIT_MODE 1
 
+// For commands to BETA
+#define HEAT_ON     'H'
+#define HEAT_OFF    'h'
+#define COOL_ON     'C'
+#define COOL_OFF    'c'
+#define FAN_ON      'F'
+#define FAN_OFF     'f'
+#define BLINDS_UP   'U'
+#define BLINDS_DOWN 'D'
+#define LIGHTS_FULL 'L'
+#define LIGHTS_HALF 'i'
+#define LIGHTS_OFF  'l'
+
 //request data
 char* com_requestdata(char DeviceDATAID);
 
