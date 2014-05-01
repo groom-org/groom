@@ -31,6 +31,7 @@ char *get_rtc();
 char *get_s1_status();
 char *get_s2_status();
 char *get_photodiode();
+char *get_motion();
 void init_status(struct status_item *items, size_t n, int x, int y);
 void update_status(struct status_item *items, size_t n, int x, int y);
 
@@ -139,6 +140,12 @@ int main(void)
 			"Photodiode",
 			"%s",
 			get_photodiode,
+			NULL
+		},
+		{
+			"MotionSensor",
+			"%s",
+			get_motion,
 			NULL
 		}
 	};
@@ -343,6 +350,17 @@ char *get_photodiode()
 	} else {
 		return buf;
 	}
+}
+
+char *get_motion()
+{
+
+	if (motion_on) {
+		return "Motion_Detected";
+	} else {
+		return "No_Motion";
+	}
+	
 }
 
 int get_spsr()

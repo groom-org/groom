@@ -29,7 +29,7 @@ static uint8_t clear_newline;
  * the Adafruit library does it, so...
  */
 #include "glcdfont.c"
-#include "logo.c"
+//#include "logo.c"
 
 
 void tft_init(void)
@@ -346,7 +346,7 @@ void tft_draw_char(int16_t x, int16_t y, unsigned char c, uint16_t color, uint16
 		}
 	}
 }
-
+/*
 void tft_draw_logo(int16_t x, int16_t y)
 {
 	/*
@@ -361,7 +361,7 @@ void tft_draw_logo(int16_t x, int16_t y)
 	tft_data_off();
 
 	tft_end();
-	*/
+	
 
 	for (int x = 0; x < logo_width; x++) {
 		for (int y = 0; y < logo_height; y++) {
@@ -369,6 +369,7 @@ void tft_draw_logo(int16_t x, int16_t y)
 		}
 	}
 }
+*/
 
 void tft_end(void)
 {
