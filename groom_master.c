@@ -81,6 +81,7 @@ uint8_t analyze_motion();
 uint8_t analyze_time();
 void send_blind_command(uint8_t blindcontrol_temp);
 void send_light_command(uint8_t sensor_val,uint8_t time_val);
+void send_temp_command(uint8_t temp_control_val);
 
 uint8_t temp_hb = 0;
 uint8_t pd_hb = 0;
@@ -91,6 +92,8 @@ uint8_t motion_on=0;
 uint8_t blindcontrol=0;
 uint8_t blindcontrol_new=0;
 uint8_t motion_val=0;
+uint8_t tempcontrol=2;
+uint8_t temp_control_new=2;
 
 int main(void)
 {
@@ -359,6 +362,9 @@ int main(void)
 	blindcontrol=blindcontrol_new;
 	motion_val=analyze_motion();
 	send_light_command(motion_val,blindcontrol_new);
+	temp_control_new=analyze_temp(temp_val, ideal_temp);
+	send_temp_command(temp_control_new);
+	tempcontrol=temp_control_new;
 }
 
 void init_status(struct status_item *items, size_t n, int x, int y)
@@ -525,7 +531,7 @@ uint8_t analyze_motion() {
 
 int analyze_temp(double temp, double ideal) {
 	double ideal_low;
-	ideal_low=(ideal-3.);
+	ideal_low=(ideal-7.0);
 	if (temp>ideal) {
 		return 0;
 		} 
@@ -555,4 +561,24 @@ void send_light_command(uint8_t sensor_val,uint8_t time_val) {
 		com_senddata('6', 'i');
 	}	
 return;
+}	
+
+void send_temp_command(uint8_t temp_control_val) {
+	if (temp_control_val != tempcontrol) {
+		if (temp_control_val==0) {
+			com_senddata('6', 'h');
+			com_senddata('6', 'F');
+			com_senddata('6', 'C');
+		}	
+		if (temp_control_val==1) {
+			com_senddata('6', 'c');
+			com_senddata('6', 'F');
+			com_senddata('6', 'H');
+		}
+		if (temp_control_val==2) {
+			com_senddata('6', 'h');
+			com_senddata('6', 'c');
+			com_senddata('6', 'f');
+		}
+	}
 }	
