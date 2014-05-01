@@ -67,12 +67,6 @@ int blindBuf[3] = {0, 0, 0};
 int *currentBuf = thermoBuf;
 //
 
-/*
-write the control you want to do in this function
-*/
-void control(char *command){
-	//do whatever you want
-}
 
 //I/O init
 void io_pin_init()
@@ -388,6 +382,57 @@ void senddata(){
 	usart_outstring(buf);
 	c=DEFAULT;
 	
+}
+
+//write the control you want to do reacting to commands form master in this function
+void control(char *command){
+  unsigned int numCommands = strlen(command);
+  int i = 0;
+
+  for(i = 0; i < numCommands; i++)
+  {
+    char cmd = command[i];
+
+    switch(cmd)
+    {
+    case HEAT_ON:
+      thermo_call_for_heat();
+      break;
+    case HEAT_OFF:
+      thermo_turn_off();
+      break;
+    case COOL_ON:
+      thermo_call_for_cool();
+      break;
+    case COOL_OFF:
+      thermo_turn_off();
+      break;
+    case FAN_ON:
+      thermo_fan_on();
+      break;
+    case FAN_OFF:
+      thermo_fan_off();
+      break;
+    case BLINDS_UP:
+      blinds_up();
+      break;
+    case BLINDS_DOWN:
+      blinds_down();
+      break;
+    case LIGHTS_FULL:
+      lights_full_power();
+      break;
+    case LIGHTS_HALF:
+      lights_low_power();
+      break;
+    case LIGHTS_OFF:
+      lights_off();
+      break;
+    default:
+      usart_printf("Invalid command character received: %d from command string: %s", cmd, command);
+      break;
+    }
+  }
 }
 
 void receivecommand(){

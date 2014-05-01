@@ -406,11 +406,11 @@ char *get_s1_status()
 {
 	uint8_t res = com_heartbeat('1');
 
-	if (res==1) {
+	if (res == 1) {
 		temp_hb = 1;
 		motion_on = 0;
 		return "active";
-	}else if(res==2){
+	}else if(res == 2){
 		temp_hb = 1;
 		motion_on = 1;
 		return "active";
@@ -435,7 +435,7 @@ char *get_s2_status()
 }
 
 int analyze_time(){
-	if (hours>08&&hours<19){
+	if (hours > 8 && hours < 19){
 		return 1;
 	}
 	return 0;
@@ -443,21 +443,21 @@ int analyze_time(){
 
 int analyze_temp() {
 	char* temp_temp;
-	temp_temp=get_temp;
+	temp_temp = get_temp;
 	double temp;
 	temp = atof(temp_temp);
-	if (temp>75) {
+	if (temp > 75) {
 		return 0;
-		}
-	if (temp<65) {
+	}
+	if (temp < 65) {
 		return 1;
-		}
+	}
 	return 2;
 }
 
 int analyze_motion() {
 	if (motion_on) {
 		return 1;
-		}
+	}
 	return 0;
 }
