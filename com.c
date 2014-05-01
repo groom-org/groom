@@ -37,11 +37,11 @@ uint8_t com_senddata(char DeviceSendID, char * data_send){
 		usart_mux_set(1);
 	}
 
-	_delay_ms(100);
+	//_delay_ms(100);
 	interruptstate=COMMAND_MODE;
 	sei();//enable interrupt
 	usart_out(DeviceSendID);
-	_delay_ms(100);
+	//_delay_ms(100);
 	
 	for(count=0;count<100;count++){
 		_delay_ms(10);
@@ -70,7 +70,7 @@ char* com_requestdata(char DeviceDATAID){
 		usart_mux_set(1);
 		//PORTD |= 1 << PD2;  // select 1;
 	}
-	_delay_ms(100);
+	//_delay_ms(100);
 	interruptstate=TRANSMIT_MODE;
 	usart_out(DeviceDATAID);
 	sei();
@@ -108,7 +108,7 @@ uint8_t com_heartbeat(char DeviceID){
 		usart_mux_set(1);
 	}
 	
-	_delay_ms(100);
+	//_delay_ms(100);
 	interruptstate=COMMAND_MODE;
 	sei();//enable interrupt
 	usart_out(DeviceID);

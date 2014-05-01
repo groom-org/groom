@@ -100,10 +100,10 @@ void control(char *command){
 // data sender temp
 void gettempdata(){
 	int i;
-	_delay_ms(500);
+	//_delay_ms(500);
 	buf[0] = '\0';
 	
-	for(i=0;i<5;i++){
+	for(i=0;i<1;i++){
 		
 		int tC, tFrac;
 		tC = getHrTemp();                             // read high-resolution temperature
@@ -123,7 +123,7 @@ void gettempdata(){
 		}
 		
 		sprintf(buf, "%d.%d\r",tC,tFrac);
-		_delay_ms(100);
+		//_delay_ms(100);
 		
 	}
 	usart_outstring(buf);
