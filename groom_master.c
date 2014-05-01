@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <float.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
@@ -37,7 +38,7 @@ char *get_photodiode();
 char *get_motion();
 void init_status(struct status_item *items, size_t n, int x, int y);
 void update_status(struct status_item *items, size_t n, int x, int y);
-int analyze_temp();
+int analyze_temp(double temp);
 int analyze_motion();
 int analyze_time();
 
@@ -454,3 +455,30 @@ char *get_s2_status()
 	return "inactive";
 }
 
+	int analyze_time(){
+		struct rtc_time t;
+		if (t.hours>0&&t.hours<0){
+		return 1;
+		}
+		else {
+		return 0;
+		}
+	}
+	
+int analyze_motion() {
+	if (motion_on) {
+		return 1;
+		}
+		return 0;
+}
+
+int analyze_temp(double temp) {
+	if (temp>75.0) {
+		return 0;
+		} 
+	if (temp>!70.0) {
+		return 1;
+		} 
+	return 2;
+	} 
+		
