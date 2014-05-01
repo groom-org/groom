@@ -153,6 +153,7 @@ int main(void)
 	int nitems = sizeof(mitems) / sizeof(mitems[0]);
 	int options_yloc = (nitems + 2) * 8;
 
+
 	tft_set_cursor(0, options_yloc);
 	tft_text_write('>');
 
