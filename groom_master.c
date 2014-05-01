@@ -31,8 +31,12 @@ char *get_rtc();
 char *get_s1_status();
 char *get_s2_status();
 char *get_photodiode();
+char *get_motion();
 void init_status(struct status_item *items, size_t n, int x, int y);
 void update_status(struct status_item *items, size_t n, int x, int y);
+int analyze_temp();
+int analyze_motion();
+int analyze_time();
 
 uint8_t temp_hb = 0;
 uint8_t pd_hb = 0;
@@ -140,11 +144,18 @@ int main(void)
 			"%s",
 			get_photodiode,
 			NULL
+		},
+		{
+			"MotionSensor",
+			"%s",
+			get_motion,
+			NULL
 		}
 	};
 	
 	int nitems = sizeof(mitems) / sizeof(mitems[0]);
 	int options_yloc = (nitems + 2) * 8;
+
 
 	tft_set_cursor(0, options_yloc);
 	tft_text_write('>');
@@ -153,7 +164,7 @@ int main(void)
 	tft_println("Set Temperature");
 	tft_set_cursor(8 * 2, options_yloc + 8);
 	tft_println("Set Lights");
-	tft_set_cursor(8 * 2, options_yloc + 16);
+	tft_set_cursor(0, options_yloc + 16);
 	for (int i = 0; i < ILI9341_TFTWIDTH / 6; i++) {
 		tft_text_write('=');
 	}
@@ -219,6 +230,8 @@ int main(void)
 						//////
 						last_enc_val = new_enc_val;
 					}
+					tft_set_cursor(0, options_yloc + 24);
+					tft_text_write(' ');
 					break;
 				case 1: //lights
 					tft_set_cursor(0, options_yloc + 32);
@@ -241,6 +254,8 @@ int main(void)
 						}
 						last_enc_val = new_enc_val;
 					}
+					tft_set_cursor(0, options_yloc + 32);
+					tft_text_write(' ');
 					break;
 			}
 		}
@@ -345,6 +360,17 @@ char *get_photodiode()
 	}
 }
 
+char *get_motion()
+{
+
+	if (motion_on) {
+		return "Motion_Detected";
+	} else {
+		return "No_Motion";
+	}
+	
+}
+
 int get_spsr()
 {
 	return SPSR;
@@ -406,4 +432,32 @@ char *get_s2_status()
 
 	pd_hb = 0;
 	return "inactive";
+}
+
+int analyze_time(){
+	if (hours>08&&hours<19){
+		return 1;
+	}
+	return 0;
+}
+
+int analyze_temp() {
+	char* temp_temp;
+	temp_temp=get_temp;
+	double temp;
+	temp = atof(temp_temp);
+	if (temp>75) {
+		return 0;
+		}
+	if (temp<65) {
+		return 1;
+		}
+	return 2;
+}
+
+int analyze_motion() {
+	if (motion_on) {
+		return 1;
+		}
+	return 0;
 }

@@ -60,6 +60,13 @@ char buf[256]; //string for thermometer
 volatile uint8_t interruptstate=0; //interrupt state
 volatile uint8_t buttonstate=0;
 
+//Output Relay Swap Buffers
+int thermoBuf[3] = {0, 0, 0};
+int lightBuf[3] = {0, 0, 0};
+int blindBuf[3] = {0, 0, 0};
+int *currentBuf = thermoBuf;
+//
+
 /*
 write the control you want to do in this function
 */
@@ -76,13 +83,13 @@ void io_pin_init()
   DDRC |= 1 << DDC3;          // Set PORTC bit 3 for output
   DDRC |= 1 << DDC4;          // Set PORTC bit 4 for output
   DDRC |= 1 << DDC5;          // Set PORTC bit 5 for output
-
-
+  
+  
   DDRC = 0xff;
   
-	DDRB |= 1 << DDB1;
-	DDRB |= 1 << DDB2;
-	DDRC |= 1 << DDC2;    
+  DDRB |= 1 << DDB1;
+  DDRB |= 1 << DDB2;
+  DDRC |= 1 << DDC2;    
 }
 
 //adc 
@@ -109,6 +116,7 @@ void button_init(void)
 	/* set pin C1 as an input */
 	DDRB &= ~(1 << 0);
 	
+	PORTC |= 1 << PC3;      // Set PC3 to a 1                                                                            
 	/* pull C1 up */
 	PORTB |= (0 << 0);
 	
@@ -136,66 +144,238 @@ uint8_t button_val(void)
 	return 0;
 }
 
+
+
+//Buffer Output Swapping
+void buffersUpdated()
+{
+  showRelayBuffer(currentBuf);
+}
+
+void relaysOff()
+{
+  PORTC &= ~(1 << PC3);  //Set PC3 to 0
+  PORTC &= ~(1 << PC4);  //Set PC4 to 0
+  PORTC &= ~(1 << PC5);  //Set PC5 to 0
+}
+
+void showRelayBuffer(int buf[3])
+{
+  relaysOff();
+
+  if(buf == NULL)
+  {
+    return;
+  }
+
+  PORTC &= ~(buf[0] << PC3);
+  PORTC &= ~(buf[1] << PC4);
+  PORTC &= ~(buf[2] << PC5);
+
+  PORTC |= (buf[0] << PC3);
+  PORTC |= (buf[1] << PC4);
+  PORTC |= (buf[2] << PC5);
+}
+
+void showNone()
+{
+  currentBuf = NULL;
+  buffersUpdated();
+}
+
+void showThermo()
+{
+  currentBuf = thermoBuf;
+  buffersUpdated();
+}
+
+void showBlinds()
+{
+  currentBuf = blindBuf;
+  buffersUpdated();
+}
+
+void showLights()
+{
+  currentBuf = lightBuf;
+  buffersUpdated();
+}
+//===
+
+//LED control
+void redLedOn()
+{
+  PORTB |= 1 << PB1;
+}
+
+void greenLedOn()
+{
+  PORTB |= 1 << PB2;
+}
+
+void blueLedOn()
+{
+  PORTC |= 1 << PC2;
+}
+
+void allLedOff()
+{
+  PORTB &= ~(1 << PB1);
+  PORTB &= ~(1 << PB2);
+  PORTC &= ~(1 << PC2);
+}
+//
+
 ISR(PCINT0_vect)
 {
-	usart_printf("INTERRUPTED thing buttonpressed = %d, button_val = %d, buttonstate = %d \r\n", button_pressed, button_val(), buttonstate);
-	if (button_pressed) {
-		if (button_val() == 0) {
-			_delay_ms(2);
-			if (button_val() == 0) {
-				button_pressed = 0;
-			}
+	
+	if (button_val() == 0) {
+		button_pressed = 0;
+	}
+	else {
+		button_pressed = 1;
+
+		switch(buttonstate)
+		{
+		default:
+		  usart_printf("unknown buttonstate: %d", buttonstate);
+		case 0:
+		  allLedOff();
+		  showNone();
+		  break;
+		case 1:
+		  allLedOff();
+		  redLedOn();
+		  showThermo();
+		  break;
+		case 2:
+		  allLedOff();
+		  greenLedOn();
+		  showLights();
+		  break;
+		case 3:
+		  allLedOff();
+		  blueLedOn();
+		  showBlinds();
+		  break;
 		}
-	} else {
-		if (button_val() == 1) {
-			_delay_ms(2);
-			if (button_val() == 1) {
-				button_pressed = 1;
-				button_pressed_stack = 1;
-				buttonstate = buttonstate + 1;
-				if (buttonstate == 4)
-					buttonstate = 0;
-			}
+
+		buttonstate = buttonstate + 1;
+		if(buttonstate == 4)
+		{
+		  buttonstate = 0;
 		}
 	}
+	
+	usart_printf("INTERRUPTED thing buttonpressed = %d, button_val = %d, buttonstate = %d \r\n", button_pressed, button_val(), buttonstate);
+
+}
+
+void relayInit()
+{
+  currentBuf = NULL;
+  buttonstate = 0;
+  buffersUpdated();
+  allLedOff();
 }
 
 //Thermostat controls
 //PC5: Cool - Blue Wire - Light Three
 //PC4: Heat - Green Wire - Light Two
-//PC2: Fan - Yellow Wire - Light One
+//PC3: Fan - Yellow Wire - Light One
 //
 void thermo_fan_on()
 {
-  usart_printf("Turning Fan On\r\n");
-  PORTC |= (1 << PC3);      // Set PC2 to a 1
+  //usart_printf("Turning Fan On\r\n");
+  //PORTC |= (1 << PC3);      // Set PC3 to a 1
+  thermoBuf[0] = 1;
+  buffersUpdated();
 }
 
 void thermo_fan_off()
 {
-  usart_printf("Turning Fan Off\r\n");
-  PORTC &= ~(1 << PC3);  //Set PC2 to 0
+  //usart_printf("Turning Fan Off\r\n");
+  //PORTC &= ~(1 << PC3);  //Set PC3 to 0
+  thermoBuf[0] = 0;
+  buffersUpdated();
 }
 
 void thermo_turn_off()
 {
-  usart_printf("Turning All Systems Off\r\n");
-  PORTC &= ~(1 << PC4);  //Set PC4 to 0
-  PORTC &= ~(1 << PC5);  //Set PC5 to 0
+  //usart_printf("Turning All Systems Off\r\n");
+  //PORTC &= ~(1 << PC4);  //Set PC4 to 0
+  //PORTC &= ~(1 << PC5);  //Set PC5 to 0
+  thermoBuf[1] = 0;
+  thermoBuf[2] = 0;
+  buffersUpdated();
 }
 
 void thermo_call_for_heat()
 {
   thermo_turn_off();
-  usart_printf("Turning Heat On\r\n");
-  PORTC |= (1 << PC4);  //Set PC4 to 1
+  //usart_printf("Turning Heat On\r\n");
+  //PORTC |= (1 << PC4);  //Set PC4 to 1
+  thermoBuf[1] = 1;
+  buffersUpdated();
 }
 
 void thermo_call_for_cool()
 {
   thermo_turn_off();
-  usart_printf("Turning Cool On\r\n");
-  PORTC |= (1 << PC5);  //Set PC5 to 1
+  //usart_printf("Turning Cool On\r\n");
+  //PORTC |= (1 << PC5);  //Set PC5 to 1
+  thermoBuf[2] = 1;
+  buffersUpdated();
+}
+
+//Light controls
+void lights_off()
+{
+  lightBuf[0] = 0;
+  lightBuf[1] = 0;
+  lightBuf[2] = 0;
+  buffersUpdated();
+}
+
+void lights_full_power()
+{
+  lightBuf[0] = 1;
+  lightBuf[1] = 1;
+  lightBuf[2] = 1;
+  buffersUpdated();
+}
+
+void lights_low_power()
+{
+  lightBuf[0] = 1;
+  lightBuf[1] = 0;
+  lightBuf[2] = 0;
+  buffersUpdated();
+}
+
+//Blind Controls
+void blinds_up()
+{
+  blindBuf[0] = 0;
+  blindBuf[1] = 1;
+  blindBuf[2] = 0;
+  buffersUpdated();
+}
+
+void blinds_down()
+{
+  blindBuf[0] = 0;
+  blindBuf[1] = 0;
+  blindBuf[2] = 1;
+  buffersUpdated();
+}
+
+void blinds_stop()
+{
+  blindBuf[0] = 1;
+  blindBuf[1] = 0;
+  blindBuf[2] = 0;
+  buffersUpdated();
 }
 
 
@@ -242,38 +422,23 @@ int main(void)
   usart_init();
   adc_init();
   io_pin_init();
-	button_init();
-
-	while(1) {
-		//usart_printf("Button state = %d\r\n", buttonstate);
-		
-		switch(buttonstate) 
-		{
-			case 0:
-				PORTB |= 1 << PB1;
-				PORTB &= ~(1 << PB2);
-				PORTC &= ~(1 << PC2);
-				break;
-			case 1:
-				PORTB |= 1 << PB2;
-				PORTB &= ~(1 << PB1);
-				PORTC &= ~(1 << PC2);
-				break;
-			case 2:
-				PORTC |= 1 << PC2;
-				PORTB &= ~(1 << PB2);
-				PORTC &= ~(1 << PB1);
-				break;
-			default:
-			case 3:
-				PORTB &= ~(1 << PB1);
-				PORTB &= ~(1 << PB2);
-				PORTC &= ~(1 << PC2);
-				break;
-		}
-		
-	}
+  button_init();
+  relayInit();
   
+  /*while(1)
+  {
+    if(command == 0) { allLedOff(); }
+    else if(command == 1) { allLedOff(); redLedOn(); }
+    else if(command == 2) { allLedOff(); greenLedOn(); }
+    else if(command == 3) { allLedOff(); blueLedOn(); }
+
+    command++;
+    if(command == 4) { command = 0; }
+
+    _delay_ms(500);
+    }*/
+
+
   while(1)
   {
     //usart_printf("Looping... command=%d\r\n", command);
@@ -290,24 +455,34 @@ int main(void)
     switch(command)
     {
     case 0:
+      lights_low_power();
       thermo_call_for_cool();
+      blinds_up();
       break;
     case 1:
+      lights_off();
       thermo_fan_on();
+      blinds_stop();
       break;
     case 2:
+      lights_full_power();
       thermo_call_for_heat();
+      blinds_down();
       break;
     case 3:
+      lights_off();
       thermo_fan_off();
+      blinds_stop();
       break;
     default:
     case 4:
+      lights_off();
       thermo_turn_off();
+      blinds_stop();
       break;
     }
 
-    _delay_ms(500);
+    _delay_ms(2000);
 
 
     command = command + 1;
