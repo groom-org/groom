@@ -69,6 +69,9 @@ int main(void)
 	*/
 
 	sei();
+	
+	tft_draw_logo(200, 200);
+	for(;;);
 
 	struct status_item mitems[] = {
 		{
@@ -165,6 +168,7 @@ int main(void)
 	int cur_option = 0;
 	int num_options = 2;
 	int last_encoder_val = encoder_val();
+
 	for(;;) {
 		update_status(mitems, nitems, 0, 0);
 		int new_encoder_val = encoder_val();
