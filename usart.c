@@ -17,14 +17,8 @@ void usart_init()
 	UCSR0B |= (1 << RXEN0);
 	UCSR0C = (3 << UCSZ00);
 
-	#ifdef GROOM_MASTER
-	UCSR0B |= (1 << RXCIE0);	
-	#endif
-
-	#ifdef GROOM_BETA
 	UCSR0B |= (1 << RXCIE0);	
 	sei();//enable interrupt
-	#endif
 
 	/* set the timer for the timeout call */
 	TCCR0B |= (1 << CS02) | (1 << CS00);
