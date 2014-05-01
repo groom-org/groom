@@ -28,8 +28,8 @@
 
 #include <groom/button.h>
 
-#include "groom//usart.h"
-
+#include "groom/usart.h"
+#include "groom/com.h"
 
 
 #define FOSC 9830400            // Clock frequency = Oscillator freq.
@@ -261,7 +261,7 @@ ISR(PCINT0_vect)
 		}
 	}
 	
-	usart_printf("INTERRUPTED thing buttonpressed = %d, button_val = %d, buttonstate = %d \r\n", button_pressed, button_val(), buttonstate);
+	//usart_printf("INTERRUPTED thing buttonpressed = %d, button_val = %d, buttonstate = %d \r\n", button_pressed, button_val(), buttonstate);
 
 }
 
@@ -280,7 +280,7 @@ void relayInit()
 //
 void thermo_fan_on()
 {
-  //usart_printf("Turning Fan On\r\n");
+  usart_printf("Turning Fan On\r\n");
   //PORTC |= (1 << PC3);      // Set PC3 to a 1
   thermoBuf[0] = 1;
   buffersUpdated();
@@ -288,7 +288,7 @@ void thermo_fan_on()
 
 void thermo_fan_off()
 {
-  //usart_printf("Turning Fan Off\r\n");
+  usart_printf("Turning Fan Off\r\n");
   //PORTC &= ~(1 << PC3);  //Set PC3 to 0
   thermoBuf[0] = 0;
   buffersUpdated();
@@ -296,7 +296,7 @@ void thermo_fan_off()
 
 void thermo_turn_off()
 {
-  //usart_printf("Turning All Systems Off\r\n");
+  usart_printf("Turning All Thermostat Systems Off\r\n");
   //PORTC &= ~(1 << PC4);  //Set PC4 to 0
   //PORTC &= ~(1 << PC5);  //Set PC5 to 0
   thermoBuf[1] = 0;
@@ -307,7 +307,7 @@ void thermo_turn_off()
 void thermo_call_for_heat()
 {
   thermo_turn_off();
-  //usart_printf("Turning Heat On\r\n");
+  usart_printf("Turning Heat On\r\n");
   //PORTC |= (1 << PC4);  //Set PC4 to 1
   thermoBuf[1] = 1;
   buffersUpdated();
@@ -316,7 +316,7 @@ void thermo_call_for_heat()
 void thermo_call_for_cool()
 {
   thermo_turn_off();
-  //usart_printf("Turning Cool On\r\n");
+  usart_printf("Turning Cool On\r\n");
   //PORTC |= (1 << PC5);  //Set PC5 to 1
   thermoBuf[2] = 1;
   buffersUpdated();
@@ -325,6 +325,7 @@ void thermo_call_for_cool()
 //Light controls
 void lights_off()
 {
+  usart_printf("Turning lights off\r\n");
   lightBuf[0] = 0;
   lightBuf[1] = 0;
   lightBuf[2] = 0;
@@ -333,6 +334,7 @@ void lights_off()
 
 void lights_full_power()
 {
+  usart_printf("Turning lights on full power\r\n");
   lightBuf[0] = 1;
   lightBuf[1] = 1;
   lightBuf[2] = 1;
@@ -341,6 +343,7 @@ void lights_full_power()
 
 void lights_low_power()
 {
+  usart_printf("Turning lights on low power\r\n");
   lightBuf[0] = 1;
   lightBuf[1] = 0;
   lightBuf[2] = 0;
@@ -350,6 +353,7 @@ void lights_low_power()
 //Blind Controls
 void blinds_up()
 {
+  usart_printf("Putting blinds up\r\n");
   blindBuf[0] = 0;
   blindBuf[1] = 1;
   blindBuf[2] = 0;
@@ -358,6 +362,7 @@ void blinds_up()
 
 void blinds_down()
 {
+  usart_printf("Putting blinds down\r\n");
   blindBuf[0] = 0;
   blindBuf[1] = 0;
   blindBuf[2] = 1;
@@ -366,6 +371,7 @@ void blinds_down()
 
 void blinds_stop()
 {
+  usart_printf("Stopping blinds\r\n");
   blindBuf[0] = 1;
   blindBuf[1] = 0;
   blindBuf[2] = 0;
