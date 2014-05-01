@@ -5,6 +5,8 @@ im = Image.open("gtestmaster.png")
 pix = im.load()
 all_lines = []
 
+#im.show()
+
 print im.size
 for i in range (0,32):
 	for j in range (0,32):
@@ -37,6 +39,12 @@ for i in range(0,32):
 	for j in range(0,32):
 		temp =  hex(int(str(dtb(red[i*32 + j])) + str(dtb(green[i*32 +j]))+ str(dtb(blue[i*32 +j])),2))
 		#print temp
+		#-----print whole line
 		#fo.write( "tft_draw_pixel(0x"+'{:0>4}'.format(str(hex(xpos+i)[2:]).upper()) + ", 0x" +'{:0>4}'.format(str(hex(ypos+j)[2:]).upper())+", 0x"+ '{:0>4}'.format(temp.upper()[2:])+");" )
+		#-----print 0x0000 rgb
 		fo.write( "0x"+ '{:0>4}'.format(temp.upper()[2:])+"," )
+		#-----print 0x00, 0x00, rgb
+#		fo.write( "0x"+ '{:0>2}'.format(temp.upper()[2:-2])+"," )
+#		fo.write("\n")
+#		fo.write( "0x"+ '{:0>2}'.format(temp.upper()[4:])+"," )
 		fo.write("\n")
