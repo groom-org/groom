@@ -426,11 +426,11 @@ char *get_s1_status()
 {
 	uint8_t res = com_heartbeat('1');
 
-	if (res==1) {
+	if (res == 1) {
 		temp_hb = 1;
 		motion_on = 0;
 		return "active";
-	}else if(res==2){
+	}else if(res == 2){
 		temp_hb = 1;
 		motion_on = 1;
 		return "active";
