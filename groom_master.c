@@ -263,13 +263,13 @@ int main(void)
 				if(manual_light){
 					tft_println("ON");
 					char buf[2];
-					sprintf(buf, "%c", LIGHTS_FULL);
+					sprintf(buf, "%c\r", LIGHTS_FULL);
 					com_senddata(SEND_BETA, buf);
 				}
 				else{
 					tft_println("OFF");
 					char buf[2];
-					sprintf(buf, "%c", LIGHTS_OFF);
+					sprintf(buf, "%c\r", LIGHTS_OFF);
 					com_senddata(SEND_BETA, buf);
 				}
 				///////
