@@ -153,7 +153,7 @@ int main(void)
 	tft_println("Set Temperature");
 	tft_set_cursor(8 * 2, options_yloc + 8);
 	tft_println("Set Lights");
-	tft_set_cursor(8 * 2, options_yloc + 16);
+	tft_set_cursor(0, options_yloc + 16);
 	for (int i = 0; i < ILI9341_TFTWIDTH / 6; i++) {
 		tft_text_write('=');
 	}
@@ -219,6 +219,8 @@ int main(void)
 						//////
 						last_enc_val = new_enc_val;
 					}
+					tft_set_cursor(0, options_yloc + 24);
+					tft_text_write(' ');
 					break;
 				case 1: //lights
 					tft_set_cursor(0, options_yloc + 32);
@@ -241,6 +243,8 @@ int main(void)
 						}
 						last_enc_val = new_enc_val;
 					}
+					tft_set_cursor(0, options_yloc + 32);
+					tft_text_write(' ');
 					break;
 			}
 		}
