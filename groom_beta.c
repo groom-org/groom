@@ -26,6 +26,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <groom/button.h>
+
 #include "groom//usart.h"
 
 
@@ -56,7 +58,7 @@ volatile uint8_t StrRxFlag=0;
 volatile char c='0';
 char buf[256]; //string for thermometer
 volatile uint8_t interruptstate=0; //interrupt state
-
+volatile uint8_t buttonstate=0;
 
 /*
 write the control you want to do in this function
@@ -71,11 +73,16 @@ void io_pin_init()
   usart_outstring("Initializing I/O pins...\r\n");
 
   DDRC |= 1 << DDC0;          // Set PORTC bit 0 for output
-  DDRC |= 1 << DDC2;          // Set PORTC bit 3 for output
+  DDRC |= 1 << DDC3;          // Set PORTC bit 3 for output
   DDRC |= 1 << DDC4;          // Set PORTC bit 4 for output
   DDRC |= 1 << DDC5;          // Set PORTC bit 5 for output
 
+
   DDRC = 0xff;
+  
+	DDRB |= 1 << DDB1;
+	DDRB |= 1 << DDB2;
+	DDRC |= 1 << DDC2;    
 }
 
 //adc 
@@ -94,6 +101,65 @@ uint16_t read_adc(uint8_t channel){
 }
 
 
+static uint8_t button_pressed = 0;
+static uint8_t button_pressed_stack = 0;
+
+void button_init(void)
+{
+	/* set pin C1 as an input */
+	DDRB &= ~(1 << 0);
+	
+	/* pull C1 up */
+	PORTB |= (0 << 0);
+	
+	/* enable pin change interrupt */
+	PCICR |= (1 << PCIE0);
+	PCMSK0 |= (1 << PCINT0);
+}
+
+uint8_t button_was_pressed(void)
+{
+	if (button_pressed_stack) {
+		button_pressed_stack = 0;
+		return 1;
+	}
+	
+	return 0;
+}
+
+uint8_t button_val(void)
+{
+	if (PINB & (1 << 0)) {
+		return 1;
+	}
+	
+	return 0;
+}
+
+ISR(PCINT0_vect)
+{
+	usart_printf("INTERRUPTED thing buttonpressed = %d, button_val = %d, buttonstate = %d \r\n", button_pressed, button_val(), buttonstate);
+	if (button_pressed) {
+		if (button_val() == 0) {
+			_delay_ms(2);
+			if (button_val() == 0) {
+				button_pressed = 0;
+			}
+		}
+	} else {
+		if (button_val() == 1) {
+			_delay_ms(2);
+			if (button_val() == 1) {
+				button_pressed = 1;
+				button_pressed_stack = 1;
+				buttonstate = buttonstate + 1;
+				if (buttonstate == 4)
+					buttonstate = 0;
+			}
+		}
+	}
+}
+
 //Thermostat controls
 //PC5: Cool - Blue Wire - Light Three
 //PC4: Heat - Green Wire - Light Two
@@ -102,13 +168,13 @@ uint16_t read_adc(uint8_t channel){
 void thermo_fan_on()
 {
   usart_printf("Turning Fan On\r\n");
-  PORTC |= (1 << PC2);      // Set PC2 to a 1
+  PORTC |= (1 << PC3);      // Set PC2 to a 1
 }
 
 void thermo_fan_off()
 {
   usart_printf("Turning Fan Off\r\n");
-  PORTC &= ~(1 << PC2);  //Set PC2 to 0
+  PORTC &= ~(1 << PC3);  //Set PC2 to 0
 }
 
 void thermo_turn_off()
@@ -176,7 +242,37 @@ int main(void)
   usart_init();
   adc_init();
   io_pin_init();
+	button_init();
 
+	while(1) {
+		//usart_printf("Button state = %d\r\n", buttonstate);
+		
+		switch(buttonstate) 
+		{
+			case 0:
+				PORTB |= 1 << PB1;
+				PORTB &= ~(1 << PB2);
+				PORTC &= ~(1 << PC2);
+				break;
+			case 1:
+				PORTB |= 1 << PB2;
+				PORTB &= ~(1 << PB1);
+				PORTC &= ~(1 << PC2);
+				break;
+			case 2:
+				PORTC |= 1 << PC2;
+				PORTB &= ~(1 << PB2);
+				PORTC &= ~(1 << PB1);
+				break;
+			default:
+			case 3:
+				PORTB &= ~(1 << PB1);
+				PORTB &= ~(1 << PB2);
+				PORTC &= ~(1 << PC2);
+				break;
+		}
+		
+	}
   
   while(1)
   {

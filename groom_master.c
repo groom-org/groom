@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
@@ -35,6 +36,10 @@ void update_status(struct status_item *items, size_t n, int x, int y);
 
 uint8_t temp_hb = 0;
 uint8_t pd_hb = 0;
+
+double temp_val=0;
+double pd_val=0;
+uint8_t motion_on=0;
 
 int main(void)
 {
@@ -311,6 +316,7 @@ char *get_temp()
 	if (temp_hb) {
 		char *val = com_requestdata('3');
 		strcpy(buf, val);
+		temp_val=atof(buf);
 		return buf;
 	} else {
 		return buf;
@@ -332,6 +338,7 @@ char *get_photodiode()
 	if (pd_hb) {
 		char *val = com_requestdata('4');
 		strcpy(buf, val);
+		pd_val=atof(buf);
 		return buf;
 	} else {
 		return buf;
@@ -373,12 +380,18 @@ char *get_s1_status()
 {
 	uint8_t res = com_heartbeat('1');
 
-	if (res) {
+	if (res==1) {
 		temp_hb = 1;
+		motion_on = 0;
 		return "active";
-	}
+	}else if(res==2){
+		temp_hb = 1;
+		motion_on = 1;
+		return "active";
+    }
 
 	temp_hb = 0;
+	motion_on = 0;
 	return "inactive";
 }
 
