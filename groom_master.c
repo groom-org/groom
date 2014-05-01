@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
@@ -12,6 +13,9 @@
 #include "groom/rtc.h"
 #include "groom/usart_mux.h"
 #include "groom/com.h"
+
+#define TEMP_SET_STRING "Manual Temperature:"
+#define LIGHT_SET_STRING "Manual Lights:"
 
 struct status_item {
 	char *label;
@@ -27,11 +31,16 @@ char *get_rtc();
 char *get_s1_status();
 char *get_s2_status();
 char *get_photodiode();
+char *get_motion();
 void init_status(struct status_item *items, size_t n, int x, int y);
 void update_status(struct status_item *items, size_t n, int x, int y);
 
 uint8_t temp_hb = 0;
 uint8_t pd_hb = 0;
+
+double temp_val=0;
+double pd_val=0;
+uint8_t motion_on=0;
 
 int main(void)
 {
@@ -66,6 +75,9 @@ int main(void)
 	*/
 
 	sei();
+	
+	//tft_draw_logo(200, 200);
+	//for(;;);
 
 	struct status_item mitems[] = {
 		{
@@ -129,8 +141,15 @@ int main(void)
 			"%s",
 			get_photodiode,
 			NULL
+		},
+		{
+			"MotionSensor",
+			"%s",
+			get_motion,
+			NULL
 		}
 	};
+	
 	int nitems = sizeof(mitems) / sizeof(mitems[0]);
 	int options_yloc = (nitems + 2) * 8;
 
@@ -140,17 +159,27 @@ int main(void)
 	tft_set_cursor(8 * 2, options_yloc);
 	tft_println("Set Temperature");
 	tft_set_cursor(8 * 2, options_yloc + 8);
-	tft_println("Do something else");
+	tft_println("Set Lights");
 	tft_set_cursor(8 * 2, options_yloc + 16);
-	tft_println("Do yet another thing");
+	for (int i = 0; i < ILI9341_TFTWIDTH / 6; i++) {
+		tft_text_write('=');
+	}
+	uint8_t manual_temp = 70;
+	tft_set_cursor(8 * 2, options_yloc + 24);
+	tft_println(TEMP_SET_STRING);
+	tft_set_cursor(8 * 2 + 8 * strlen(TEMP_SET_STRING), options_yloc + 24);
+	tft_println(" 70");
+	uint8_t manual_light = 1; //1 on, 0 off
+	tft_set_cursor(8 * 2, options_yloc + 32);
+	tft_println(LIGHT_SET_STRING);
+	tft_set_cursor(8 * 2 + 8 * strlen(LIGHT_SET_STRING), options_yloc + 32);
+	tft_println(" ON");
 
 	init_status(mitems, nitems, 0, 0);
 
 	int cur_option = 0;
-	int num_options = 3;
+	int num_options = 2;
 	int last_encoder_val = encoder_val();
-
-	uint16_t i = 0;
 
 	for(;;) {
 		update_status(mitems, nitems, 0, 0);
@@ -174,6 +203,55 @@ int main(void)
 			tft_set_cursor(0, options_yloc + 8 * cur_option);
 			tft_text_write('>');
 		}
+		if(button_was_pressed()){ 
+			int last_enc_val = encoder_val();
+			int new_enc_val;
+			switch(cur_option){
+				case 0: //temperature
+					tft_set_cursor(0, options_yloc + 24);
+					tft_println("> ");
+					tft_set_cursor(8*2 + 8 * strlen(TEMP_SET_STRING), options_yloc + 24);
+					while(!button_was_pressed()){
+						new_enc_val = encoder_val();
+						if (new_enc_val > last_enc_val) {
+							manual_temp++;
+							tft_printf(" %d", manual_temp);
+						} else if (new_encoder_val < last_encoder_val) {
+							manual_temp--;
+							tft_printf(" %d", manual_temp);
+						}
+						//////
+						//send command to board alpha
+						
+						//////
+						last_enc_val = new_enc_val;
+					}
+					break;
+				case 1: //lights
+					tft_set_cursor(0, options_yloc + 32);
+					tft_println("> ");
+					tft_set_cursor(8*2 + 8 * strlen(LIGHT_SET_STRING), options_yloc + 32);
+					while(!button_was_pressed()){
+						int new_enc_val = encoder_val();
+						if (new_enc_val != last_enc_val) {
+							manual_light = !manual_light;
+							if(manual_light){
+								tft_println("ON");
+							}
+							else{
+								tft_println("OFF");
+							}
+							///////
+							//send command to board alpha
+							
+							///////
+						}
+						last_enc_val = new_enc_val;
+					}
+					break;
+			}
+		}
+		tft_set_cursor(0, options_yloc + 8 * cur_option);
 
 		/*
 		tft_set_cursor(half_width, 8);
@@ -200,10 +278,6 @@ int main(void)
 			usart_out(c);
 		}
 		*/
-		if (i % 20 == 0) {
-			com_senddata(SEND_ALPHA, "hello, world\r");
-		}
-		i++;
 	}
 }
 
@@ -249,6 +323,7 @@ char *get_temp()
 	if (temp_hb) {
 		char *val = com_requestdata('3');
 		strcpy(buf, val);
+		temp_val=atof(buf);
 		return buf;
 	} else {
 		return buf;
@@ -258,7 +333,7 @@ char *get_temp()
 char *get_photodiode()
 {
 	static int i = 0;
-	static char buf[16];
+	static char buf[9];
 
 	if (i != 5) {
 		i++;
@@ -270,10 +345,22 @@ char *get_photodiode()
 	if (pd_hb) {
 		char *val = com_requestdata('4');
 		strcpy(buf, val);
+		pd_val=atof(buf);
 		return buf;
 	} else {
 		return buf;
 	}
+}
+
+char *get_motion()
+{
+
+	if (motion_on) {
+		return "Motion_Detected";
+	} else {
+		return "No_Motion";
+	}
+	
 }
 
 int get_spsr()
@@ -311,12 +398,18 @@ char *get_s1_status()
 {
 	uint8_t res = com_heartbeat('1');
 
-	if (res) {
+	if (res==1) {
 		temp_hb = 1;
+		motion_on = 0;
 		return "active";
-	}
+	}else if(res==2){
+		temp_hb = 1;
+		motion_on = 1;
+		return "active";
+    }
 
 	temp_hb = 0;
+	motion_on = 0;
 	return "inactive";
 }
 

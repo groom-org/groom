@@ -25,26 +25,17 @@
 #include <avr/interrupt.h>
 #include <stdlib.h>
 #include <string.h>
+#include "groom/usart.h"
+#include "groom/com.h"
 
 volatile int i=0;
-volatile uint8_t buffer[20];
+volatile uint8_t buffer[20]; //buffer for data passing
 volatile uint8_t StrRxFlag=0;
-volatile char c='0';
-char buf[256]; //string for thermometer
+volatile char c='0';   //command char
 volatile uint8_t interruptstate=0; //interrupt state
+char buf[256]; //string for thermometer
 
-// Find divisors for the UART0 and I2C baud rates
-
-#define FOSC 9830400            // Clock frequency = Oscillator freq.
-#define BAUD 9600               // UART0 baud rate
-#define MYUBRR FOSC/16/BAUD-1   // Value for UBRR0 register
-#define BDIV (FOSC / 100000 - 16) / 2 + 1    // Puts I2C rate just below 100kHz
-// device ID and address
-#define DEV_TYPE   0x90     
-#define DEV_ADDR   0x00 
-#define SLAVE_ID   DEV_TYPE | DEV_ADDR
-
-//!! This protocol should be used in all uP.
+/* !! This protocol should be used in all uP.
 #define HB_ALPHA '1'
 #define HB_BETA '2'
 #define READ_ALPHA '3'
@@ -57,6 +48,17 @@ volatile uint8_t interruptstate=0; //interrupt state
 #define DEFAULT '0' 
 #define COMMAND_MODE 0
 #define TRANSMIT_MODE 1
+*/
+
+// Find divisors for the UART0 and I2C baud rates
+#define FOSC 9830400            // Clock frequency = Oscillator freq.
+#define BAUD 9600               // UART0 baud rate
+#define MYUBRR FOSC/16/BAUD-1   // Value for UBRR0 register
+#define BDIV (FOSC / 100000 - 16) / 2 + 1    // Puts I2C rate just below 100kHz
+// device ID and address
+#define DEV_TYPE   0x90     
+#define DEV_ADDR   0x00 
+#define SLAVE_ID   DEV_TYPE | DEV_ADDR
 
 // DS1621 Registers & Commands
 
@@ -90,7 +92,6 @@ void startConversion(int);
 uint8_t getReg(uint8_t);
 void setConfig(uint8_t);
 void setup();
-
 
 void control(char *command){
 	//do whatever you want
@@ -151,37 +152,8 @@ void receivecommand(){
 	
 	//set relays
 	control(buffer);
-	
+
 } 
-
-void usart_init(unsigned short ubrr)
-{
-	UBRR0 = ubrr;
-	UCSR0B |= (1 << TXEN0);
-	UCSR0B |= (1 << RXEN0);
-	UCSR0B |= (1 << RXCIE0); 
-	UCSR0C = (3 << UCSZ00);
-	sei();//enable interrupt
-}
-
-void usart_out(char ch)
-{
-	while ((UCSR0A & (1 << UDRE0)) == 0);
-	UDR0 = ch;
-}
-
-char usart_in()
-{
-	while ( !(UCSR0A & (1 << RXC0)) );
-	return UDR0;
-}
-
-void usart_outstring(char *s) {
-	while (*s != '\0') {
-		usart_out(*s);
-		s++;
-	}
-}
 
 int main(void)
 {
@@ -191,6 +163,7 @@ int main(void)
 	buf[0] = '\0';
 	
 	while(1){
+		//detect motion
 		if (PINC & (1 << PC1))
 			motion=1;
 		else {
@@ -205,12 +178,11 @@ int main(void)
 				break;
 		}
 		
-	};
+	}
 	
 }
 
 //I2C things, don't touch!
-
 /* ----------------------------------------------------------------------- */
 
 /*
@@ -456,7 +428,6 @@ void startConversion(int start)
 	}
 }
 
-
 // Reads temperature or threshold
 // -- whole degrees C only
 // -- works only with RD_TEMP, ACCESS_TL, and ACCESS_TH
@@ -484,7 +455,7 @@ int getTemp(uint8_t reg)
 int getHrTemp()
 {
 	
-    
+  
 	startConversion(1);                        // initiate conversion
 	
 	uint8_t cfg = 0;

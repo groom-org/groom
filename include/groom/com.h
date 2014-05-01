@@ -15,10 +15,27 @@
 #define COMMAND_MODE 0
 #define TRANSMIT_MODE 1
 
-/* reserve char com '1' '2' '3' '4' 'R' 'A' */
+// For commands to BETA
+#define HEAT_ON     'H'
+#define HEAT_OFF    'h'
+#define COOL_ON     'C'
+#define COOL_OFF    'c'
+#define FAN_ON      'F'
+#define FAN_OFF     'f'
+#define BLINDS_UP   'U'
+#define BLINDS_DOWN 'D'
+#define LIGHTS_FULL 'L'
+#define LIGHTS_HALF 'i'
+#define LIGHTS_OFF  'l'
+
+//request data
 char* com_requestdata(char DeviceDATAID);
 
 /* heartbeat function */
 uint8_t com_heartbeat(char DeviceID);
+
+//send data
+uint8_t com_senddata(char DeviceSendID, char * data_send);
+
 
 #endif /* GROOM_COM_H_ */
