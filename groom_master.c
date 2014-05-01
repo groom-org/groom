@@ -75,8 +75,8 @@ int main(void)
 
 	sei();
 	
-	tft_draw_logo(200, 200);
-	for(;;);
+	//tft_draw_logo(200, 200);
+	//for(;;);
 
 	struct status_item mitems[] = {
 		{
