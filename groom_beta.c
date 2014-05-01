@@ -37,7 +37,7 @@
 #define MYUBRR FOSC/16/BAUD-1   // Value for UBRR0 register
 #define BDIV (FOSC / 100000 - 16) / 2 + 1    // Puts I2C rate just below 100kHz
 
-//!! This protocol should be used in all uP.
+/*!! This protocol should be used in all uP.
 #define HB_ALPHA '1'
 #define HB_BETA '2'
 #define READ_ALPHA '3'
@@ -50,7 +50,7 @@
 #define DEFAULT '0' 
 #define COMMAND_MODE 0
 #define TRANSMIT_MODE 1
- 
+ */
 // device ID and address
 volatile int i=0;
 volatile uint8_t buffer[20];
@@ -435,7 +435,7 @@ void control(char *command){
       lights_off();
       break;
     default:
-      usart_printf("Invalid command character received: %d from command string: %s", cmd, command);
+      //usart_printf("Invalid command character received: %d from command string: %s", cmd, command);
       break;
     }
   }
@@ -492,12 +492,13 @@ int main(void)
 
   while(1)
   {
+    
     switch(interruptstate){
-    case TRANSMIT_MODE:
-      receivecommand();
-      break;
-    default:
-      break;
+      case TRANSMIT_MODE:
+        receivecommand();
+        break;
+      default:
+        break;
     }
     
 
