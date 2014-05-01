@@ -16,6 +16,9 @@
 
 #define TEMP_SET_STRING "Manual Temperature:"
 #define LIGHT_SET_STRING "Manual Lights:"
+#define MAIN_MENU 0
+#define MANUAL_TEMP 1
+#define MANUAL_LIGHT 2
 
 struct status_item {
 	char *label;
@@ -184,82 +187,93 @@ int main(void)
 	int cur_option = 0;
 	int num_options = 2;
 	int last_encoder_val = encoder_val();
+	int menu_state = MAIN_MENU;
 
 	for(;;) {
 		update_status(mitems, nitems, 0, 0);
 		int new_encoder_val = encoder_val();
-		int last_option = cur_option;
+		if(menu_state == MAIN_MENU){
+			int last_option = cur_option;
 
-		if (new_encoder_val > last_encoder_val) {
-			cur_option++;
-		} else if (new_encoder_val < last_encoder_val) {
-			cur_option--;
-			if (cur_option == -1) {
-				cur_option = num_options - 1;
+			if (new_encoder_val > last_encoder_val) {
+				cur_option++;
+			} else if (new_encoder_val < last_encoder_val) {
+				cur_option--;
+				if (cur_option == -1) {
+					cur_option = num_options - 1;
+				}
 			}
-		}
-		cur_option %= num_options;
-		last_encoder_val = new_encoder_val;
+			cur_option %= num_options;
+			last_encoder_val = new_encoder_val;
 
-		if (cur_option != last_option) {
-			tft_set_cursor(0, options_yloc + 8 * last_option);
-			tft_text_write(' ');
-			tft_set_cursor(0, options_yloc + 8 * cur_option);
-			tft_text_write('>');
-		}
-		if(button_was_pressed()){ 
-			int last_enc_val = encoder_val();
-			int new_enc_val;
+			if (cur_option != last_option) {
+				tft_set_cursor(0, options_yloc + 8 * last_option);
+				tft_text_write(' ');
+				tft_set_cursor(0, options_yloc + 8 * cur_option);
+				tft_text_write('>');
+			}
+			if(button_was_pressed()){
 			switch(cur_option){
-				case 0: //temperature
-					tft_set_cursor(0, options_yloc + 24);
-					tft_println("> ");
-					tft_set_cursor(8*2 + 8 * strlen(TEMP_SET_STRING), options_yloc + 24);
-					while(!button_was_pressed()){
-						new_enc_val = encoder_val();
-						if (new_enc_val > last_enc_val) {
-							manual_temp++;
-							tft_printf(" %d", manual_temp);
-						} else if (new_encoder_val < last_encoder_val) {
-							manual_temp--;
-							tft_printf(" %d", manual_temp);
-						}
-						//////
-						//send command to board alpha
-						
-						//////
-						last_enc_val = new_enc_val;
-					}
-					tft_set_cursor(0, options_yloc + 24);
-					tft_text_write(' ');
+				case 0:
+					menu_state = MANUAL_TEMP;
 					break;
-				case 1: //lights
-					tft_set_cursor(0, options_yloc + 32);
-					tft_println("> ");
-					tft_set_cursor(8*2 + 8 * strlen(LIGHT_SET_STRING), options_yloc + 32);
-					while(!button_was_pressed()){
-						int new_enc_val = encoder_val();
-						if (new_enc_val != last_enc_val) {
-							manual_light = !manual_light;
-							if(manual_light){
-								tft_println("ON");
-							}
-							else{
-								tft_println("OFF");
-							}
-							///////
-							//send command to board alpha
-							
-							///////
-						}
-						last_enc_val = new_enc_val;
-					}
-					tft_set_cursor(0, options_yloc + 32);
-					tft_text_write(' ');
+				case 1:
+					menu_state = MANUAL_LIGHT;
 					break;
 			}
+			}
 		}
-		tft_set_cursor(0, options_yloc + 8 * cur_option);
+		else if(menu_state == MANUAL_TEMP){
+			tft_set_cursor(0, options_yloc + 24);
+			tft_println("> ");
+			tft_set_cursor(8*2 + 8 * strlen(TEMP_SET_STRING), options_yloc + 24);
+			if (new_encoder_val > last_encoder_val) {
+				manual_temp++;
+				tft_printf(" %d", manual_temp);
+			} else if (new_encoder_val < last_encoder_val) {
+				manual_temp--;
+				tft_printf(" %d", manual_temp);
+			}
+			//////
+			//send command to board alpha
+			
+			//////
+			//last_enc_val = new_enc_val;
+			if(button_was_pressed()){
+				tft_set_cursor(0, options_yloc + 24);
+				tft_text_write(' ');
+				menu_state = MAIN_MENU;
+				tft_set_cursor(0, options_yloc + 8 * cur_option);
+			}
+		}
+		else if(menu_state == MANUAL_LIGHT){
+			tft_set_cursor(0, options_yloc + 32);
+			tft_println("> ");
+			tft_set_cursor(8*2 + 8 * strlen(LIGHT_SET_STRING), options_yloc + 32);
+			//int new_enc_val = encoder_val();
+			if (new_encoder_val != last_encoder_val) {
+				manual_light = !manual_light;
+				if(manual_light){
+					tft_println("ON");
+				}
+				else{
+					tft_println("OFF");
+				}
+				///////
+				//send command to board alpha
+				
+				///////
+			}
+			//last_enc_val = new_enc_val;
+			if(button_was_pressed()){
+				tft_set_cursor(0, options_yloc + 32);
+				tft_text_write(' ');
+				menu_state = MAIN_MENU;
+				tft_set_cursor(0, options_yloc + 8 * cur_option);
+			}	
+		}
+		last_encoder_val = new_encoder_val;
+		
 
 		/*
 		tft_set_cursor(half_width, 8);
