@@ -398,7 +398,7 @@ void control(char *command){
   for(i = 0; i < numCommands; i++)
   {
     char cmd = command[i];
-
+    usart_out(cmd);
     switch(cmd)
     {
     case HEAT_ON:
@@ -448,7 +448,7 @@ void receivecommand(){
 	while (1) {
 		_delay_ms(10);
 		count++;
-		if(StrRxFlag || count>200){    //time_out
+		if(StrRxFlag || count>500){    //time_out
 			if(StrRxFlag){
             	StrRxFlag=0;                // Reset String received flag
 				count=0;
