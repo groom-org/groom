@@ -38,16 +38,21 @@ char *get_photodiode();
 char *get_motion();
 void init_status(struct status_item *items, size_t n, int x, int y);
 void update_status(struct status_item *items, size_t n, int x, int y);
-int analyze_temp(double temp);
-int analyze_motion();
-int analyze_time();
+int analyze_temp(double temp, double ideal);
+uint8_t analyze_motion();
+uint8_t analyze_time();
+void send_blind_command(uint8_t blindcontrol_temp);
+void send_light_command(uint8_t sensor_val,uint8_t time_val);
 
 uint8_t temp_hb = 0;
 uint8_t pd_hb = 0;
-
+double ideal_temp=0;
 double temp_val=0;
 double pd_val=0;
 uint8_t motion_on=0;
+uint8_t blindcontrol=0;
+uint8_t blindcontrol_new=0;
+uint8_t motion_val=0;
 
 int main(void)
 {
@@ -237,7 +242,7 @@ int main(void)
 			}
 			//////
 			//send command to board alpha
-			
+
 			//////
 			//last_enc_val = new_enc_val;
 			if(button_was_pressed()){
@@ -247,6 +252,7 @@ int main(void)
 				tft_set_cursor(0, options_yloc + 8 * cur_option);
 			}
 		}
+
 		else if(menu_state == MANUAL_LIGHT){
 			tft_set_cursor(0, options_yloc + 32);
 			tft_println("> ");
@@ -279,6 +285,7 @@ int main(void)
 				tft_set_cursor(0, options_yloc + 8 * cur_option);
 			}	
 		}
+		ideal_temp=(double) manual_temp;
 		last_encoder_val = new_encoder_val;
 		
 
@@ -308,6 +315,12 @@ int main(void)
 		}
 		*/
 	}
+	//do smart control stuff here maybe?
+	blindcontrol_new=analyze_time();		
+	send_blind_command(blindcontrol_new);
+	blindcontrol=blindcontrol_new;
+	motion_val=analyze_motion();
+	send_light_command(motion_val,blindcontrol_new);
 }
 
 void init_status(struct status_item *items, size_t n, int x, int y)
@@ -455,30 +468,53 @@ char *get_s2_status()
 	return "inactive";
 }
 
-	int analyze_time(){
-		struct rtc_time t;
-		if (t.hours>0&&t.hours<0){
+uint8_t analyze_time(){
+	struct rtc_time t;
+	if (t.hours>0&&t.hours<0){  //edit this to include actual daytime hours
 		return 1;
-		}
-		else {
-		return 0;
-		}
 	}
+	else {
+		return 0;
+	}
+}
 	
-int analyze_motion() {
+uint8_t analyze_motion() {
 	if (motion_on) {
 		return 1;
 		}
 		return 0;
 }
 
-int analyze_temp(double temp) {
-	if (temp>75.0) {
+int analyze_temp(double temp, double ideal) {
+	double ideal_low;
+	ideal_low=(ideal-3.);
+	if (temp>ideal) {
 		return 0;
 		} 
-	if (temp>!70.0) {
+/*	if (temp<ideal_low) {	not sure why this section is causing error?
 		return 1;
-		} 
+		} */
 	return 2;
-	} 
-		
+} 
+	
+void send_blind_command(uint8_t blindcontrol_temp) {
+	if (blindcontrol!=blindcontrol_temp); {
+		if (blindcontrol_temp) { //blinds go up if not already up and if its during the daytime
+			com_senddata('6', 'U');
+		}	
+		if (!blindcontrol_temp) { //blinds go down if not already down, else nothing at night time
+			com_senddata('6', 'D');
+		}	
+	}	
+return;
+}		
+
+void send_light_command(uint8_t sensor_val,uint8_t time_val) {
+	if (sensor_val&&time_val); {	//motion detected and daytime
+		com_senddata('6', 'L');
+	}	
+	if (sensor_val&& ~time_val) { //motion detected and night time
+		com_senddata('6', 'i');
+	}	
+return;
+}	
