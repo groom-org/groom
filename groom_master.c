@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <float.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
@@ -86,8 +85,6 @@ void send_temp_command(uint8_t temp_control_val);
 uint8_t temp_hb = 0;
 uint8_t pd_hb = 0;
 double ideal_temp=0;
-double temp_val=0;
-double pd_val=0;
 uint8_t motion_on=0;
 uint8_t blindcontrol=0;
 uint8_t blindcontrol_new=0;
@@ -409,7 +406,6 @@ char *get_temp()
 	if (temp_hb) {
 		char *val = com_requestdata('3');
 		strcpy(buf, val);
-		temp_val=atof(buf);
 		return buf;
 	} else {
 		return buf;
@@ -431,7 +427,6 @@ char *get_photodiode()
 	if (pd_hb) {
 		char *val = com_requestdata('4');
 		strcpy(buf, val);
-		pd_val=atof(buf);
 		return buf;
 	} else {
 		return buf;
