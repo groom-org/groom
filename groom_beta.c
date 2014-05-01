@@ -280,7 +280,7 @@ void relayInit()
 //
 void thermo_fan_on()
 {
-  usart_printf("Turning Fan On\r\n");
+  usart_printf("Turning fan on\r\n");
   //PORTC |= (1 << PC3);      // Set PC3 to a 1
   thermoBuf[0] = 1;
   buffersUpdated();
@@ -288,7 +288,7 @@ void thermo_fan_on()
 
 void thermo_fan_off()
 {
-  usart_printf("Turning Fan Off\r\n");
+  usart_printf("Turning fan off\r\n");
   //PORTC &= ~(1 << PC3);  //Set PC3 to 0
   thermoBuf[0] = 0;
   buffersUpdated();
@@ -296,7 +296,7 @@ void thermo_fan_off()
 
 void thermo_turn_off()
 {
-  usart_printf("Turning All Thermostat Systems Off\r\n");
+  usart_printf("Turning all thermostat systems off\r\n");
   //PORTC &= ~(1 << PC4);  //Set PC4 to 0
   //PORTC &= ~(1 << PC5);  //Set PC5 to 0
   thermoBuf[1] = 0;
@@ -307,7 +307,7 @@ void thermo_turn_off()
 void thermo_call_for_heat()
 {
   thermo_turn_off();
-  usart_printf("Turning Heat On\r\n");
+  usart_printf("Turning heat on\r\n");
   //PORTC |= (1 << PC4);  //Set PC4 to 1
   thermoBuf[1] = 1;
   buffersUpdated();
@@ -316,7 +316,7 @@ void thermo_call_for_heat()
 void thermo_call_for_cool()
 {
   thermo_turn_off();
-  usart_printf("Turning Cool On\r\n");
+  usart_printf("Turning cool on\r\n");
   //PORTC |= (1 << PC5);  //Set PC5 to 1
   thermoBuf[2] = 1;
   buffersUpdated();
@@ -467,7 +467,7 @@ void receivecommand(){
 
 int main(void)
 {
-  int command = 0;
+  int command = -1;
 
   /* for 9600 baud on with 9.304MHz clock */
   usart_init();
@@ -492,7 +492,14 @@ int main(void)
 
   while(1)
   {
-    //usart_printf("Looping... command=%d\r\n", command);
+    switch(interruptstate){
+    case TRANSMIT_MODE:
+      receivecommand();
+      break;
+    default:
+      break;
+    }
+    
 
     if(command % 2 == 0) 
     {
@@ -531,15 +538,19 @@ int main(void)
       thermo_turn_off();
       blinds_stop();
       break;
+    case -1:
+      //Do Nothing
+      break;
     }
 
-    _delay_ms(2000);
 
-
-    command = command + 1;
-    if(command == 5)
+    if(command != -1)
     {
+      command = command + 1;
+      if(command == 5)
+      {
 	command = 0;
+      }
     }
 
   } 
