@@ -467,7 +467,7 @@ void receivecommand(){
 
 int main(void)
 {
-  int command = -1;
+  int count = -1;
 
   /* for 9600 baud on with 9.304MHz clock */
   usart_init();
@@ -501,7 +501,7 @@ int main(void)
     }
     
 
-    if(command % 2 == 0) 
+    if(count % 2 == 0) 
     {
       PORTC |= 1 << PC0;   
     }
@@ -510,7 +510,7 @@ int main(void)
       PORTC &= ~(1 << PC0);
     }
 
-    switch(command)
+    switch(count)
     {
     case 0:
       lights_low_power();
@@ -544,12 +544,12 @@ int main(void)
     }
 
 
-    if(command != -1)
+    if(count != -1)
     {
-      command = command + 1;
-      if(command == 5)
+      count = count + 1;
+      if(count == 5)
       {
-	command = 0;
+	count = 0;
       }
     }
 
