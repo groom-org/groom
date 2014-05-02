@@ -267,6 +267,12 @@ int main(void)
 	uint8_t counter = 0;
 
 	for(;;) {
+	
+		if(FAN_status==0){
+			draw_light_off();
+		}else{
+			draw_light_on();
+		}
 		uint8_t smart_state_changed = 0;
 		update_status(mitems, nitems, 0, 0);
 		int new_encoder_val = encoder_val();
