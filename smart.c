@@ -58,41 +58,49 @@ int day_parse(){
 //uint8_t Light_status; // 2 full 1 half 0 off
 //uint8_t AC_status;      // 1 heat on 2 heat off  3 cool on 4 cool off
 void smart_control(int temp, int pd, uint8_t day_night, int motion){
-	if ((Target_temp+3)>temp) {	//if too cold, turn on heat
-		com_senddata(SEND_BETA, COOL_OFF);
-		com_senddata(SEND_BETA, FAN_ON);
-		com_senddata(SEND_BETA, HEAT_ON);
+	if ((Target_temp-5)>temp) {	//if too cold, turn on heat
+		char buf[5];
+		sprintf(buf, "%c%c%c\r", COOL_OFF, FAN_ON, HEAT_ON);
+		com_senddata(SEND_BETA, buf);
 		AC_status=1;	//update to say heat on
 	}
-	if ((Target_temp-3)<temp) { //if too hot, turn on air
-		com_senddata(SEND_BETA, HEAT_OFF);
-		com_senddata(SEND_BETA, FAN_ON);
-		com_senddata(SEND_BETA, COOL_ON);
+	if ((Target_temp+5)<temp) { //if too hot, turn on air
+		char buf[5];
+		sprintf(buf, "%c%c%c\r", HEAT_OFF, FAN_ON, COOL_ON);
+		com_senddata(SEND_BETA, buf);
 		AC_status=3;	//update to say air on
 	}	
 	if (day_night) {	//if it is daytime
-
 		if (~Blind_status) {		//if blinds down, put up
-			com_senddata(SEND_BETA, BLINDS_UP);	
+			char buf[2];
+			sprintf(buf, "%c\r", BLINDS_UP);
+			com_senddata(SEND_BETA, buf);
 			Blind_status=1;
 		}		
 		if (Light_status!=2) {	//if lights not full, turn lights on
-			com_senddata(SEND_BETA, LIGHTS_FULL);
+			char buf[2];
+			sprintf(buf, "%c\r", LIGHTS_FULL);
 			Light_status=2;
 		}	
 		
 	}
 	if (~day_night) {	//if it is nighttime
 		if (Blind_status) {		//if blinds up, put down
-			com_senddata(SEND_BETA, BLINDS_DOWN);	
+			char buf[2];
+			sprintf(buf, "%c\r", BLINDS_DOWN);
+			com_senddata(SEND_BETA, buf);
 			Blind_status=0;
 		}		
 		if (~Light_status&& motion) {	//if lights off & motion detected
-			com_senddata(SEND_BETA, LIGHTS_HALF);
+			char buf[2];
+			sprintf(buf, "%c\r", LIGHTS_HALF);
+			com_senddata(SEND_BETA, buf);
 			Light_status=1; //update to say lights half on
 		}	
 		if (Light_status!=0 && ~motion) {  //if lights on and no motion
-			com_senddata(SEND_BETA,LIGHTS_OFF);
+			char buf[2];
+			sprintf(buf, "%c\r", LIGHTS_OFF);
+			com_senddata(SEND_BETA, buf);
 			Light_status=0; //update to say lights off
 		}	
 	}	
