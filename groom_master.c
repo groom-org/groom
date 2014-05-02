@@ -309,11 +309,20 @@ int main(void)
 				manual_temp--;
 				tft_printf("%d ", manual_temp);
 			}
-			//////
-			//send command to board alpha
+			char buf[3];
+			if(manual_temp < return_temp_val() - 2){
+				sprintf(buf, "%c%c\r", COOL_OFF, HEAT_ON);
+				com_senddata(SEND_BETA, buf);
+				tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 64);
+				tft_println("HEAT ON ");
+			}
+			else if(manual_temp > return_temp_val() + 2){
+				sprintf(buf, "%c%c\r", HEAT_OFF, COOL_ON);
+				com_senddata(SEND_BETA, buf);
+				tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 64);
+				tft_println("COOL ON ");
+			}
 
-			//////
-			//last_enc_val = new_enc_val;
 			if(button_was_pressed()){
 				tft_set_cursor(0, options_yloc + 40);
 				tft_text_write(' ');
