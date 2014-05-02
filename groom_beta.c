@@ -88,6 +88,8 @@ void io_pin_init()
 
 //adc 
 void adc_init(void){ 
+  DDRC &= ~(1 << DDC1);
+
 	ADCSRA |= ((1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0));    //16Mhz/128 = 125Khz the ADC reference clock
 	ADMUX |= (1<<REFS0);                //Voltage reference from Avcc (5v)
 	ADCSRA |= (1<<ADEN);                //Turn on ADC
@@ -471,8 +473,9 @@ int main(void)
 
   /* for 9600 baud on with 9.304MHz clock */
   usart_init();
-  adc_init();
   io_pin_init();
+  /* adc_init must happen after io_pin_init because reasons */
+  adc_init();
   button_init();
   relayInit();
   

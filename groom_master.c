@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <float.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
@@ -90,8 +89,6 @@ void send_temp_command(uint8_t temp_control_val);
 uint8_t temp_hb = 0;
 uint8_t pd_hb = 0;
 double ideal_temp=0;
-double temp_val=0;
-double pd_val=0;
 uint8_t motion_on=0;
 uint8_t blindcontrol=0;
 uint8_t blindcontrol_new=0;
@@ -476,14 +473,14 @@ int main(void)
 		*/
 	}
 	//do smart control stuff here maybe?
-	blindcontrol_new=analyze_time();		
+/*	blindcontrol_new=analyze_time();		
 	send_blind_command(blindcontrol_new);
 	blindcontrol=blindcontrol_new;
 	motion_val=analyze_motion();
 	send_light_command(motion_val,blindcontrol_new);
 	temp_control_new=analyze_temp(temp_val, ideal_temp);
 	send_temp_command(temp_control_new);
-	tempcontrol=temp_control_new;
+	tempcontrol=temp_control_new; */
 }
 
 void init_status(struct status_item *items, size_t n, int x, int y)
@@ -528,7 +525,6 @@ char *get_temp()
 	if (temp_hb) {
 		char *val = com_requestdata('3');
 		strcpy(buf, val);
-		temp_val=atof(buf);
 		return buf;
 	} else {
 		return buf;
@@ -550,7 +546,6 @@ char *get_photodiode()
 	if (pd_hb) {
 		char *val = com_requestdata('4');
 		strcpy(buf, val);
-		pd_val=atof(buf);
 		return buf;
 	} else {
 		return buf;
