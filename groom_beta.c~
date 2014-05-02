@@ -474,11 +474,10 @@ int main(void)
 
   /* for 9600 baud on with 9.304MHz clock */
   usart_init();
-  
-  io_pin_init();
-  button_init();
-  relayInit();
   adc_init();
+  //io_pin_init();
+  //button_init();
+  //relayInit();
   
   /*while(1)
   {
