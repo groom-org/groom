@@ -1,4 +1,11 @@
-#include <cmath.h>
+#include <avr/io.h>
+#include <stdio.h>
+#include <util/delay.h>
+#include <avr/interrupt.h>
+#include <stdlib.h>
+#include <string.h>
+#include "groom/usart.h"
+#include "groom/com.h"
 #include "groom/rtc.h"
 
 
@@ -70,7 +77,7 @@ void smart_control(int temp, int pd, uint8_t day_night, int motion){
 		}		
 		if (Light_status!=2) {	//if lights not full, turn lights on
 			com_senddata('6', 'L');
-			Light_stutus=2;
+			Light_status=2;
 		}	
 		
 	}
@@ -96,8 +103,9 @@ void smart_control(int temp, int pd, uint8_t day_night, int motion){
 			Light_status=1; //update to say lights half on
 		}	
 		if (Light_status!=0 && ~motion) {  //if lights on and no motion
-			com_senddate('6','l');
+			com_senddata('6','l');
 			Light_status=0; //update to say lights off
+		}	
 	}	
 
 
