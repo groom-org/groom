@@ -420,7 +420,7 @@ void draw_logotext(){
     tft_draw_line(x+158, y+25, x+183, y+25, 0xF800);
 }
 
-void draw_light_off{
+void draw_light_on(){
     int x = 27;
     int y = 200;
     tft_draw_line(x+18, y+1, x+2, y+8, 0xFFFF);
@@ -443,7 +443,17 @@ void draw_light_off{
     tft_draw_line(x+9, y+36, x+17, y+36, 0xFFFF);
     tft_draw_line(x+17, y+31, x+17, y+36, 0xFFFF);
 
+    tft_draw_line(x+13, y-2, x+13, y-10, 0xFFFF);
+    tft_draw_line(x+25, y+1, x+29, y-4, 0xFFFF);
+    tft_draw_line(x+1, y+1, x-4, y-4, 0xFFFF);
+}
 
+void draw_light_off(){
+    int x = 27;
+    int y = 200;
+    tft_draw_line(x+13, y-2, x+13, y-10, 0x0000);
+    tft_draw_line(x+25, y+1, x+29, y-4, 0x0000);
+    tft_draw_line(x+1, y+1, x-4, y-4, 0x0000);
 }
 
 
