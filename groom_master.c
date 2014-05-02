@@ -215,33 +215,33 @@ int main(void)
 	tft_println("Set Temperature");
 	tft_set_cursor(8 * 2, options_yloc + 8);
 	tft_println("Set Lights");
-	tft_set_cursor(0, options_yloc + 16);
+	tft_set_cursor(8 * 2, options_yloc + 16);
 	tft_println("Set Blinds");
-	tft_set_cursor(0, options_yloc + 32);
+	tft_set_cursor(8 * 2, options_yloc + 24);
 	tft_println("Set HVAC");
-	tft_set_cursor(0, options_yloc + 40);
+	tft_set_cursor(8 * 2, options_yloc + 32);
 	for (int i = 0; i < ILI9341_TFTWIDTH / 6; i++) {
 		tft_text_write('=');
 	}
 	uint8_t manual_temp = 70;
-	tft_set_cursor(8 * 2, options_yloc + 48);
+	tft_set_cursor(8 * 2, options_yloc + 40);
 	tft_println(TEMP_SET_STRING);
-	tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 48);
+	tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 40);
 	tft_println("70");
 	uint8_t manual_light = 1; //1 HI, 0 OFF, 2 LOW
-	tft_set_cursor(8 * 2, options_yloc + 56);
+	tft_set_cursor(8 * 2, options_yloc + 48);
 	tft_println(LIGHT_SET_STRING);
-	tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 56);
+	tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 48);
 	tft_println("ON");
 	uint8_t manual_blind = 0; //0 DOWN, 1 UP
-	tft_set_cursor(8 * 2, options_yloc + 64);
+	tft_set_cursor(8 * 2, options_yloc + 56);
 	tft_println(BLIND_SET_STRING);
-	tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 64);
+	tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 56);
 	tft_println("DOWN");
 	uint8_t manual_hvac = 4; //0 H_ON, 1 H_OFF, 2 C_ON, 3 C_OFF, 4 F_ON, 5 F_OFF
-	tft_set_cursor(8 * 2, options_yloc + 72);
+	tft_set_cursor(8 * 2, options_yloc + 64);
 	tft_println(HVAC_SET_STRING);
-	tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 72);
+	tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 64);
 	tft_println("FAN ON");
 
 	init_status(mitems, nitems, 0, 0);
@@ -292,9 +292,9 @@ int main(void)
 			}
 		}
 		else if(menu_state == MANUAL_TEMP){
-			tft_set_cursor(0, options_yloc + 48);
+			tft_set_cursor(0, options_yloc + 40);
 			tft_println("> ");
-			tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 48);
+			tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 40);
 			if (new_encoder_val > last_encoder_val) {
 				manual_temp++;
 				tft_printf("%d ", manual_temp);
@@ -308,16 +308,16 @@ int main(void)
 			//////
 			//last_enc_val = new_enc_val;
 			if(button_was_pressed()){
-				tft_set_cursor(0, options_yloc + 48);
+				tft_set_cursor(0, options_yloc + 40);
 				tft_text_write(' ');
 				menu_state = MAIN_MENU;
 				tft_set_cursor(0, options_yloc + 8 * cur_option);
 			}
 		}
 		else if(menu_state == MANUAL_LIGHT){
-			tft_set_cursor(0, options_yloc + 56);
+			tft_set_cursor(0, options_yloc + 48);
 			tft_println("> ");
-			tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 56);
+			tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 48);
 			uint8_t changed = 0;
 			if (new_encoder_val > last_encoder_val) {
 				changed = 1;
@@ -351,16 +351,16 @@ int main(void)
 				}
 			}
 			if(button_was_pressed()){
-				tft_set_cursor(0, options_yloc + 56);
+				tft_set_cursor(0, options_yloc + 48);
 				tft_text_write(' ');
 				menu_state = MAIN_MENU;
 				tft_set_cursor(0, options_yloc + 8 * cur_option);
 			}	
 		}
 		else if(menu_state == MANUAL_BLIND){
-			tft_set_cursor(0, options_yloc + 64);
+			tft_set_cursor(0, options_yloc + 56);
 			tft_println("> ");
-			tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 64);
+			tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 56);
 			if(new_encoder_val != last_encoder_val){
 				manual_blind = !manual_blind;
 				if(manual_blind){
@@ -377,7 +377,7 @@ int main(void)
 				}
 			}
 			if(button_was_pressed()){
-				tft_set_cursor(0, options_yloc + 64);
+				tft_set_cursor(0, options_yloc + 56);
 				tft_text_write(' ');
 				menu_state = MAIN_MENU;
 				tft_set_cursor(0, options_yloc + 8 * cur_option);
@@ -385,9 +385,9 @@ int main(void)
 			
 		}
 		else if(menu_state == MANUAL_HVAC){
-			tft_set_cursor(0, options_yloc + 72);
+			tft_set_cursor(0, options_yloc + 64);
 			tft_println("> ");
-			tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 72);
+			tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 64);
 			uint8_t changed = 0;
 			if (new_encoder_val > last_encoder_val) {
 				changed = 1;
@@ -402,32 +402,32 @@ int main(void)
 				char buf[2];
 				switch(manual_hvac){
 				case 0:
-					tft_println("H_ON ");
+					tft_println("HEAT ON ");
 					sprintf(buf, "%c\r", HEAT_ON);
 					com_senddata(SEND_BETA, buf);
 					break;
 				case 1:
-					tft_println("H_OFF");
+					tft_println("HEAT OFF");
 					sprintf(buf, "%c\r", HEAT_OFF);
 					com_senddata(SEND_BETA, buf);
 					break;
 				case 2:
-					tft_println("C_ON ");
+					tft_println("COOL ON ");
 					sprintf(buf, "%c\r", COOL_ON);
 					com_senddata(SEND_BETA, buf);
 					break;
 				case 3:
-					tft_println("C_OFF");
+					tft_println("COOL OFF");
 					sprintf(buf, "%c\r", COOL_OFF);
 					com_senddata(SEND_BETA, buf);
 					break;
 				case 4:
-					tft_println("F_ON ");
+					tft_println("FAN ON  ");
 					sprintf(buf, "%c\r", FAN_ON);
 					com_senddata(SEND_BETA, buf);
 					break;
 				case 5:
-					tft_println("F_OFF");
+					tft_println("FAN OFF ");
 					sprintf(buf, "%c\r", FAN_OFF);
 					com_senddata(SEND_BETA, buf);
 					break;
@@ -436,7 +436,8 @@ int main(void)
 				}
 			}
 			if(button_was_pressed()){
-				tft_set_cursor(0, options_yloc + 72);
+				tft_set_cursor(0, options_yloc + 64
+);
 				tft_text_write(' ');
 				menu_state = MAIN_MENU;
 				tft_set_cursor(0, options_yloc + 8 * cur_option);
