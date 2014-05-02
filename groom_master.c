@@ -15,11 +15,15 @@
 #include "groom/usart_mux.h"
 #include "groom/com.h"
 
-#define TEMP_SET_STRING "Manual Temperature:"
-#define LIGHT_SET_STRING "Manual Lights:"
+#define TEMP_SET_STRING "Temperature:"
+#define LIGHT_SET_STRING "Lights:"
+#define BLIND_SET_STRING "Blinds:"
+#define HVAC_SET_STRING "HVAC:"
 #define MAIN_MENU 0
 #define MANUAL_TEMP 1
 #define MANUAL_LIGHT 2
+#define MANUAL_BLIND 3
+#define MANUAL_HVAC 4
 
 
 /*
@@ -215,24 +219,38 @@ int main(void)
 	tft_set_cursor(8 * 2, options_yloc + 8);
 	tft_println("Set Lights");
 	tft_set_cursor(0, options_yloc + 16);
+	tft_println("Set Blinds");
+	tft_set_cursor(0, options_yloc + 32);
+	tft_println("Set HVAC");
+	tft_set_cursor(0, options_yloc + 40);
 	for (int i = 0; i < ILI9341_TFTWIDTH / 6; i++) {
 		tft_text_write('=');
 	}
 	uint8_t manual_temp = 70;
-	tft_set_cursor(8 * 2, options_yloc + 24);
+	tft_set_cursor(8 * 2, options_yloc + 48);
 	tft_println(TEMP_SET_STRING);
-	tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 24);
+	tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 48);
 	tft_println("70");
-	uint8_t manual_light = 1; //1 on, 0 off
-	tft_set_cursor(8 * 2, options_yloc + 32);
+	uint8_t manual_light = 1; //1 HI, 0 OFF, 2 LOW
+	tft_set_cursor(8 * 2, options_yloc + 56);
 	tft_println(LIGHT_SET_STRING);
-	tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 32);
+	tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 56);
 	tft_println("ON");
+	uint8_t manual_blind = 0; //0 DOWN, 1 UP
+	tft_set_cursor(8 * 2, options_yloc + 64);
+	tft_println(BLIND_SET_STRING);
+	tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 64);
+	tft_println("DOWN");
+	uint8_t manual_hvac = 4; //0 H_ON, 1 H_OFF, 2 C_ON, 3 C_OFF, 4 F_ON, 5 F_OFF
+	tft_set_cursor(8 * 2, options_yloc + 72);
+	tft_println(HVAC_SET_STRING);
+	tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 72);
+	tft_println("FAN ON");
 
 	init_status(mitems, nitems, 0, 0);
 
 	int cur_option = 0;
-	int num_options = 2;
+	int num_options = 4;
 	int last_encoder_val = encoder_val();
 	int menu_state = MAIN_MENU;
 
@@ -267,13 +285,19 @@ int main(void)
 				case 1:
 					menu_state = MANUAL_LIGHT;
 					break;
+				case 2:
+					menu_state = MANUAL_BLIND;
+					break;
+				case 3:
+					menu_state = MANUAL_HVAC;
+					break;
 			}
 			}
 		}
 		else if(menu_state == MANUAL_TEMP){
-			tft_set_cursor(0, options_yloc + 24);
+			tft_set_cursor(0, options_yloc + 48);
 			tft_println("> ");
-			tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 24);
+			tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 48);
 			if (new_encoder_val > last_encoder_val) {
 				manual_temp++;
 				tft_printf("%d ", manual_temp);
@@ -287,40 +311,135 @@ int main(void)
 			//////
 			//last_enc_val = new_enc_val;
 			if(button_was_pressed()){
-				tft_set_cursor(0, options_yloc + 24);
+				tft_set_cursor(0, options_yloc + 48);
 				tft_text_write(' ');
 				menu_state = MAIN_MENU;
 				tft_set_cursor(0, options_yloc + 8 * cur_option);
 			}
 		}
-
 		else if(menu_state == MANUAL_LIGHT){
-			tft_set_cursor(0, options_yloc + 32);
+			tft_set_cursor(0, options_yloc + 56);
 			tft_println("> ");
-			tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 32);
-			//int new_enc_val = encoder_val();
-			if (new_encoder_val != last_encoder_val) {
-				manual_light = !manual_light;
-				if(manual_light){
-					tft_println("ON ");
-					char buf[2];
+			tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 56);
+			uint8_t changed = 0;
+			if (new_encoder_val > last_encoder_val) {
+				changed = 1;
+				manual_light++;
+
+			} else if (new_encoder_val < last_encoder_val) {
+				changed = 1;
+				manual_light--;
+			}
+			manual_light %= 3;
+			if(changed){
+				char buf[2];
+				switch(manual_light){
+				case 0:
+					tft_println("OFF");
+					sprintf(buf, "%c\r", LIGHTS_OFF);
+					com_senddata(SEND_BETA, buf);
+					break;
+				case 1:
+					tft_println("HI ");
 					sprintf(buf, "%c\r", LIGHTS_FULL);
+					com_senddata(SEND_BETA, buf);
+					break;
+				case 2:
+					tft_println("LOW");
+					sprintf(buf, "%c\r", LIGHTS_HALF);
+					com_senddata(SEND_BETA, buf);
+					break;
+				default:
+					break;
+				}
+			}
+			if(button_was_pressed()){
+				tft_set_cursor(0, options_yloc + 56);
+				tft_text_write(' ');
+				menu_state = MAIN_MENU;
+				tft_set_cursor(0, options_yloc + 8 * cur_option);
+			}	
+		}
+		else if(menu_state == MANUAL_BLIND){
+			tft_set_cursor(0, options_yloc + 64);
+			tft_println("> ");
+			tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 64);
+			if(new_encoder_val != last_encoder_val){
+				manual_blind = !manual_blind;
+				if(manual_blind){
+					tft_println("UP  ");
+					char buf[2];
+					sprintf(buf, "%c\r", BLINDS_UP);
 					com_senddata(SEND_BETA, buf);
 				}
 				else{
-					tft_println("OFF");
+					tft_println("DOWN");
 					char buf[2];
-					sprintf(buf, "%c\r", LIGHTS_OFF);
+					sprintf(buf, "%c\r", BLINDS_DOWN);
 					com_senddata(SEND_BETA, buf);
 				}
-				///////
-				//send command to board alpha
-				
-				///////
 			}
-			//last_enc_val = new_enc_val;
 			if(button_was_pressed()){
-				tft_set_cursor(0, options_yloc + 32);
+				tft_set_cursor(0, options_yloc + 64);
+				tft_text_write(' ');
+				menu_state = MAIN_MENU;
+				tft_set_cursor(0, options_yloc + 8 * cur_option);
+			}
+			
+		}
+		else if(menu_state == MANUAL_HVAC){
+			tft_set_cursor(0, options_yloc + 72);
+			tft_println("> ");
+			tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 72);
+			uint8_t changed = 0;
+			if (new_encoder_val > last_encoder_val) {
+				changed = 1;
+				manual_hvac++;
+
+			} else if (new_encoder_val < last_encoder_val) {
+				changed = 1;
+				manual_hvac--;
+			}
+			manual_hvac %= 6;
+			if(changed){
+				char buf[2];
+				switch(manual_hvac){
+				case 0:
+					tft_println("H_ON ");
+					sprintf(buf, "%c\r", HEAT_ON);
+					com_senddata(SEND_BETA, buf);
+					break;
+				case 1:
+					tft_println("H_OFF");
+					sprintf(buf, "%c\r", HEAT_OFF);
+					com_senddata(SEND_BETA, buf);
+					break;
+				case 2:
+					tft_println("C_ON ");
+					sprintf(buf, "%c\r", COOL_ON);
+					com_senddata(SEND_BETA, buf);
+					break;
+				case 3:
+					tft_println("C_OFF");
+					sprintf(buf, "%c\r", COOL_OFF);
+					com_senddata(SEND_BETA, buf);
+					break;
+				case 4:
+					tft_println("F_ON ");
+					sprintf(buf, "%c\r", FAN_ON);
+					com_senddata(SEND_BETA, buf);
+					break;
+				case 5:
+					tft_println("F_OFF");
+					sprintf(buf, "%c\r", FAN_OFF);
+					com_senddata(SEND_BETA, buf);
+					break;
+				default:
+					break;
+				}
+			}
+			if(button_was_pressed()){
+				tft_set_cursor(0, options_yloc + 72);
 				tft_text_write(' ');
 				menu_state = MAIN_MENU;
 				tft_set_cursor(0, options_yloc + 8 * cur_option);
