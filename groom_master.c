@@ -130,10 +130,7 @@ int main(void)
 			tft_draw_pixel(200,202,0xF800);
 				tft_draw_pixel(200,203,0xF800);
 	/* uncomment to set time */
-	/*
 	uint8_t rtc_run_res = rtc_run();
-	usart_printf("rct_run res: 0x%.2x", rtc_run_res);
-	*/
 
 	sei();
 	
