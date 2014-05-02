@@ -354,14 +354,14 @@ int main(void)
 		*/
 	}
 	//do smart control stuff here maybe?
-	blindcontrol_new=analyze_time();		
+/*	blindcontrol_new=analyze_time();		
 	send_blind_command(blindcontrol_new);
 	blindcontrol=blindcontrol_new;
 	motion_val=analyze_motion();
 	send_light_command(motion_val,blindcontrol_new);
 	temp_control_new=analyze_temp(temp_val, ideal_temp);
 	send_temp_command(temp_control_new);
-	tempcontrol=temp_control_new;
+	tempcontrol=temp_control_new; */
 }
 
 void init_status(struct status_item *items, size_t n, int x, int y)
