@@ -476,17 +476,29 @@ void draw_fan_on(){
 
 
 
-    tft_draw_line(x+7, y-3, x+7, y-10, 0xFFFF);
-    tft_draw_line(x+15, y-3, x+15, y-10, 0xFFFF);
-    tft_draw_line(x+23, y-3, x+23, y-10, 0xFFFF);
+    tft_draw_line(x+8, y-3, x+6, y-6, 0xFFFF);
+    tft_draw_line(x+16, y-3, x+14, y-6, 0xFFFF);
+    tft_draw_line(x+24, y-3, x+22, y-6, 0xFFFF);
+    tft_draw_line(x+6, y-6, x+8, y-9, 0xFFFF);
+    tft_draw_line(x+14, y-6, x+16, y-9, 0xFFFF);
+    tft_draw_line(x+22, y-6, x+24, y-9, 0xFFFF);
+    tft_draw_line(x+8, y-9, x+6, y-12, 0xFFFF);
+    tft_draw_line(x+16, y-9, x+14, y-12, 0xFFFF);
+    tft_draw_line(x+24, y-9, x+22, y-12, 0xFFFF);
 }
 
 void draw_fan_off(){
     int x = 67;
     int y = 200;
-    tft_draw_line(x+7, y-3, x+7, y-10, 0x0000);
-    tft_draw_line(x+15, y-3, x+15, y-10, 0x0000);
-    tft_draw_line(x+23, y-3, x+23, y-10, 0x0000);
+    tft_draw_line(x+8, y-3, x+6, y-6, 0x0000);
+    tft_draw_line(x+16, y-3, x+14, y-6, 0x0000);
+    tft_draw_line(x+24, y-3, x+22, y-6, 0x0000);
+    tft_draw_line(x+6, y-6, x+8, y-9, 0x0000);
+    tft_draw_line(x+14, y-6, x+16, y-9, 0x0000);
+    tft_draw_line(x+22, y-6, x+24, y-9, 0x0000);
+    tft_draw_line(x+8, y-9, x+6, y-12, 0x0000);
+    tft_draw_line(x+16, y-9, x+14, y-12, 0x0000);
+    tft_draw_line(x+24, y-9, x+22, y-12, 0x0000);
 }
 
 
