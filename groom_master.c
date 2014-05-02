@@ -223,11 +223,11 @@ int main(void)
 	for (int i = 0; i < ILI9341_TFTWIDTH / 6; i++) {
 		tft_text_write('=');
 	}
-	uint8_t manual_temp = 70;
+	uint8_t manual_temp = 22;
 	tft_set_cursor(8 * 2, options_yloc + 40);
 	tft_println(TEMP_SET_STRING);
 	tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 40);
-	tft_println("70");
+	tft_println("22");
 	uint8_t manual_light = 1; //1 HI, 0 OFF, 2 LOW
 	tft_set_cursor(8 * 2, options_yloc + 48);
 	tft_println(LIGHT_SET_STRING);
