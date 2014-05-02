@@ -99,6 +99,10 @@ uint8_t tempcontrol=2;
 uint8_t temp_control_new=2;
 int temp_val=0;
 
+uint8_t AC_status=0; //0 off , 1 cool on, 2 cool off, 3 heat on, 4 heat off
+uint8_t FAN_status=0;
+
+
 int main(void)
 {
 	/* init usart */
@@ -125,10 +129,7 @@ int main(void)
 	tft_set_text_size(1);
 	tft_set_clear_newline(0);
 
-	tft_draw_pixel(200,200,0xF800);
-		tft_draw_pixel(200,201,0xF800);
-			tft_draw_pixel(200,202,0xF800);
-				tft_draw_pixel(200,203,0xF800);
+	tft_draw_line(200,200,210,210,0xF800);
 	/* uncomment to set time */
 	/*
 	uint8_t rtc_run_res = rtc_run();
@@ -311,16 +312,35 @@ int main(void)
 			}
 			char buf[3];
 			if(manual_temp < return_temp_val() - 2){
-				sprintf(buf, "%c%c\r", COOL_OFF, HEAT_ON);
-				com_senddata(SEND_BETA, buf);
-				tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 64);
-				tft_println("HEAT ON ");
-			}
-			else if(manual_temp > return_temp_val() + 2){
+			
+			    if(AC_status!=1){
 				sprintf(buf, "%c%c\r", HEAT_OFF, COOL_ON);
 				com_senddata(SEND_BETA, buf);
+				AC_status=1;
+				}
 				tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 64);
 				tft_println("COOL ON ");
+			
+			    
+			}
+			else if(manual_temp > return_temp_val() + 2){
+			
+				if(AC_status!=3){
+					sprintf(buf, "%c%c\r", COOL_OFF, HEAT_ON);
+					com_senddata(SEND_BETA, buf);
+					AC_status=3;
+				}
+				tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 64);
+				tft_println("HEAT ON ");
+				
+			}else{
+				if(AC_status!=0){
+				sprintf(buf, "%c%c\r", HEAT_OFF, COOL_OFF);
+				com_senddata(SEND_BETA, buf);
+				AC_status=0;
+				}
+				tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 64);
+				tft_println("ALL OFF ");
 			}
 
 			if(button_was_pressed()){
@@ -418,34 +438,52 @@ int main(void)
 				char buf[2];
 				switch(manual_hvac){
 				case 0:
-					tft_println("HEAT ON ");
-					sprintf(buf, "%c\r", HEAT_ON);
-					com_senddata(SEND_BETA, buf);
+					if(AC_status!=3){
+						tft_println("HEAT ON ");
+						sprintf(buf, "%c\r", HEAT_ON);
+						com_senddata(SEND_BETA, buf);
+						AC_status=3;
+					}
 					break;
 				case 1:
-					tft_println("HEAT OFF");
-					sprintf(buf, "%c\r", HEAT_OFF);
-					com_senddata(SEND_BETA, buf);
+					if(AC_status!=4){
+						tft_println("HEAT OFF");
+						sprintf(buf, "%c\r", HEAT_OFF);
+						com_senddata(SEND_BETA, buf);
+						AC_status=4;
+					}
 					break;
 				case 2:
+					if(AC_status!=1){
 					tft_println("COOL ON ");
 					sprintf(buf, "%c\r", COOL_ON);
 					com_senddata(SEND_BETA, buf);
+					AC_status=1;
+					}
 					break;
 				case 3:
+					if(AC_status!=2){
 					tft_println("COOL OFF");
 					sprintf(buf, "%c\r", COOL_OFF);
 					com_senddata(SEND_BETA, buf);
+					AC_status=2;
+					}
 					break;
 				case 4:
+					if(FAN_status!=1){
 					tft_println("FAN ON  ");
 					sprintf(buf, "%c\r", FAN_ON);
 					com_senddata(SEND_BETA, buf);
+					FAN_status=1;
+					}
 					break;
 				case 5:
+					if(FAN_status!=0){
 					tft_println("FAN OFF ");
 					sprintf(buf, "%c\r", FAN_OFF);
 					com_senddata(SEND_BETA, buf);
+					FAN_status=0;
+					}
 					break;
 				default:
 					break;
