@@ -533,7 +533,7 @@ char *get_temp()
 	if (temp_hb) {
 		char *val = com_requestdata('3');
 		strcpy(buf, val);
-		temp_val=temp_parse(val);
+		temp_val=temp_parse(buf);
 		return buf;
 	} else {
 		return buf;

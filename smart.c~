@@ -24,7 +24,7 @@ int temp_parse(char * temp){
 }
 
 int pd_parse(char* pd){
-	return atoi(pd);
+	return atoi(*pd);
 }
 
 int day_parse(){
