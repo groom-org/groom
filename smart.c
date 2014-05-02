@@ -65,6 +65,7 @@ void smart_control(int temp, int pd, uint8_t day_night, int motion){
 		if (Light_status!=2) {	//if lights not full, turn lights on
 			char buf[2];
 			sprintf(buf, "%c\r", LIGHTS_FULL);
+			com_senddata(SEND_BETA, buf);
 			Light_status=2;
 		}	
 		
