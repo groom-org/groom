@@ -264,6 +264,7 @@ int main(void)
 	int num_options = 5;
 	int last_encoder_val = encoder_val();
 	int menu_state = MAIN_MENU;
+	uint8_t counter = 0;
 
 	for(;;) {
 		uint8_t smart_state_changed = 0;
@@ -529,7 +530,9 @@ int main(void)
 				tft_set_cursor(8 * 2, options_yloc + 32);
 				tft_printf("%s ON ", SMART_MODE_STRING);
 			}
-			smart_control(temp_val, pd_val, day_night_val, motion_on);
+			if(counter % 5 == 0 && temp_hb && pd_hb){ //both slaves are active
+				smart_control(temp_val, pd_val, day_night_val, motion_on);
+			}
 		}
 		else{
 			if(smart_state_changed){
@@ -537,7 +540,7 @@ int main(void)
 				tft_printf("%s OFF", SMART_MODE_STRING);
 			}
 		}
-
+		counter++;
 		/*
 		tft_set_cursor(half_width, 8);
 		tft_printf("%d\n", get_temp());
