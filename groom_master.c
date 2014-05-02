@@ -78,7 +78,7 @@ char *get_s1_status();
 char *get_s2_status();
 char *get_photodiode();
 char *get_motion();
-int  return_temp_val();
+char *return_temp_val();
 void init_status(struct status_item *items, size_t n, int x, int y);
 void update_status(struct status_item *items, size_t n, int x, int y);
 int analyze_temp(double temp, double ideal);
@@ -98,6 +98,9 @@ uint8_t motion_val=0;
 uint8_t tempcontrol=2;
 uint8_t temp_control_new=2;
 int temp_val=0;
+uint8_t day_night_val=0;
+int pd_val=0;
+
 
 uint8_t AC_status=0; //0 off , 1 cool on, 2 cool off, 3 heat on, 4 heat off
 uint8_t FAN_status=0;
@@ -129,7 +132,7 @@ int main(void)
 	tft_set_text_size(1);
 	tft_set_clear_newline(0);
 
-	tft_draw_line(200,200,210,210,0xF800);
+	draw_logotext();
 	/* uncomment to set time */
 	/*
 	uint8_t rtc_run_res = rtc_run();
@@ -143,8 +146,8 @@ int main(void)
 
 	struct status_item mitems[] = {
 		{
-			"Temp_int",
-			"%d",
+			"Temp",
+			"%s",
 			return_temp_val,
 			NULL
 		},
@@ -587,8 +590,10 @@ char *get_temp()
 	}
 }
 
-int return_temp_val(){
-	return temp_val;
+char * return_temp_val(){
+	static char temp[30];
+	sprintf(temp,"%d pd:%d day:%d",temp_val,pd_val,day_night_val);
+	return temp;
 }
 
 char *get_photodiode()
@@ -606,6 +611,7 @@ char *get_photodiode()
 	if (pd_hb) {
 		char *val = com_requestdata('4');
 		strcpy(buf, val);
+		pd_val = pd_parse(val);
 		return buf;
 	} else {
 		return buf;
@@ -639,6 +645,7 @@ char *get_rtc()
 	static char buf[20];
 	struct rtc_time t;
 	uint8_t res = rtc_get_time(&t);
+	
 	if (res) {
 		sprintf(buf, "err: 0x%.2x", res);
 		return buf;
@@ -651,6 +658,12 @@ char *get_rtc()
 	        t.minutes,
 	        t.seconds);
 
+	if(t.hours>6 && t.hours<19){
+		day_night_val=1;
+	}else{
+		day_night_val=0;
+	}
+	
 	return buf;
 }
 
