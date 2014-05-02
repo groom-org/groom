@@ -6,9 +6,11 @@
 #define Target_brightness 75
 
 
-uint8_t Blind_status     // 1 up   0 down
-uint8_t AC_status      // 1 heat on 2 heat off  3 cool on 4 cool off
-uint8_t Light_status // 2 full 1 half 0 off
+uint8_t Blind_status;     // 1 up   0 down
+uint8_t AC_status;      // 1 heat on 2 heat off  3 cool on 4 cool off
+uint8_t Light_status; // 2 full 1 half 0 off
+uint8_t Time_status; //1 for daytime, 0 night
+int Temperature;
 
 int temp_parse(char * temp){
 
@@ -46,8 +48,27 @@ int day_parse(){
 		return 0;
 	}
 }
-
+//uint8_t Light_status; // 2 full 1 half 0 off
+//uint8_t AC_status;      // 1 heat on 2 heat off  3 cool on 4 cool off
 void smart_control(int temp, int pd, uint8_t day_night, int motion){
+	if (day_night) {	//if it is daytime
+		if (Target_temp>temp) {	//if too cold, turn on heat
+			com_senddata('6', 'c');
+			com_senddata('6', 'F');
+			com_senddata('6', 'H');
+		}
+		if (Target_temp<temp) { //if too hot, turn on air
+			com_senddata('6', 'h');
+			com_senddata('6', 'F');
+			com_senddata('6', 'C');
+		}	
+		if (~Blind_status) {		//if blinds down, put up
+			com_senddata('6', 'U');	
+		}		
+		if (Light_status!=2) {	//if lights on, turn lights on
+			com_senddata('6', 'L');
+		}	
+	}
 	
 
 
