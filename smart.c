@@ -1,5 +1,7 @@
+#include <stdlib.h>
 #include <cmath.h>
 #include "groom/rtc.h"
+#include "groom/com.h"
 
 
 #define Target_temp 22
@@ -51,7 +53,35 @@ int day_parse(){
 //uint8_t Light_status; // 2 full 1 half 0 off
 //uint8_t AC_status;      // 1 heat on 2 heat off  3 cool on 4 cool off
 void smart_control(int temp, int pd, uint8_t day_night, int motion){
-	if (day_night) {	//if it is daytime
+
+	if(breakcommand){
+		return;
+	}	
+
+	if(day_night){
+
+
+
+
+
+
+	}else{
+
+
+
+
+
+
+	}
+
+
+
+
+}
+
+
+
+if (day_night) {	//if it is daytime
 		if (Target_temp>temp) {	//if too cold, turn on heat
 			com_senddata('6', 'c');
 			com_senddata('6', 'F');
@@ -99,9 +129,3 @@ void smart_control(int temp, int pd, uint8_t day_night, int motion){
 			com_senddate('6','l');
 			Light_status=0; //update to say lights off
 	}	
-
-
-
-
-}
-
