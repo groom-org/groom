@@ -19,6 +19,7 @@
 #define LIGHT_SET_STRING "Lights:"
 #define BLIND_SET_STRING "Blinds:"
 #define HVAC_SET_STRING "HVAC:"
+#define SMART_MODE_STRING "Smart Mode:"
 #define MAIN_MENU 0
 #define MANUAL_TEMP 1
 #define MANUAL_LIGHT 2
@@ -94,12 +95,12 @@ double ideal_temp=0;
 uint8_t motion_on=0;
 uint8_t blindcontrol=0;
 uint8_t blindcontrol_new=0;
-uint8_t motion_val=0;
 uint8_t tempcontrol=2;
 uint8_t temp_control_new=2;
 int temp_val=0;
 uint8_t day_night_val=0;
 int pd_val=0;
+uint8_t smart_mode=1;
 
 
 uint8_t AC_status=0; //0 off , 1 cool on, 2 cool off, 3 heat on, 4 heat off
@@ -230,39 +231,42 @@ int main(void)
 	tft_println("Set Blinds");
 	tft_set_cursor(8 * 2, options_yloc + 24);
 	tft_println("Set HVAC");
-	tft_set_cursor(0, options_yloc + 32);
+	tft_set_cursor(8 * 2, options_yloc + 32);
+	tft_printf("%s ON", SMART_MODE_STRING);
+	tft_set_cursor(0, options_yloc + 40);
 	for (int i = 0; i < ILI9341_TFTWIDTH / 6; i++) {
 		tft_text_write('=');
 	}
 	uint8_t manual_temp = 22;
-	tft_set_cursor(8 * 2, options_yloc + 40);
+	tft_set_cursor(8 * 2, options_yloc + 48);
 	tft_println(TEMP_SET_STRING);
-	tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 40);
+	tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 48);
 	tft_println("22");
 	uint8_t manual_light = 1; //1 HI, 0 OFF, 2 LOW
-	tft_set_cursor(8 * 2, options_yloc + 48);
+	tft_set_cursor(8 * 2, options_yloc + 56);
 	tft_println(LIGHT_SET_STRING);
-	tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 48);
+	tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 56);
 	tft_println("ON");
 	uint8_t manual_blind = 0; //0 DOWN, 1 UP
-	tft_set_cursor(8 * 2, options_yloc + 56);
+	tft_set_cursor(8 * 2, options_yloc + 64);
 	tft_println(BLIND_SET_STRING);
-	tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 56);
+	tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 64);
 	tft_println("DOWN");
 	uint8_t manual_hvac = 4; //0 H_ON, 1 H_OFF, 2 C_ON, 3 C_OFF, 4 F_ON, 5 F_OFF
-	tft_set_cursor(8 * 2, options_yloc + 64);
+	tft_set_cursor(8 * 2, options_yloc + 72);
 	tft_println(HVAC_SET_STRING);
-	tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 64);
+	tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 72);
 	tft_println("FAN ON");
 
 	init_status(mitems, nitems, 0, 0);
 
 	int cur_option = 0;
-	int num_options = 4;
+	int num_options = 5;
 	int last_encoder_val = encoder_val();
 	int menu_state = MAIN_MENU;
 
 	for(;;) {
+		uint8_t smart_state_changed = 0;
 		update_status(mitems, nitems, 0, 0);
 		int new_encoder_val = encoder_val();
 		if(menu_state == MAIN_MENU){
@@ -299,17 +303,25 @@ int main(void)
 				case 3:
 					menu_state = MANUAL_HVAC;
 					break;
+				case 4:
+					smart_mode = 1;
+					smart_state_changed;
+					break;
 			}
 			}
 		}
 		else if(menu_state == MANUAL_TEMP){
-			tft_set_cursor(0, options_yloc + 40);
+			tft_set_cursor(0, options_yloc + 48);
 			tft_println("> ");
-			tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 40);
+			tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 48);
 			if (new_encoder_val > last_encoder_val) {
+				smart_mode = 0;
+				smart_state_changed = 1;
 				manual_temp++;
 				tft_printf("%d ", manual_temp);
 			} else if (new_encoder_val < last_encoder_val) {
+				smart_mode = 0;
+				smart_state_changed = 1;
 				manual_temp--;
 				tft_printf("%d ", manual_temp);
 			}
@@ -321,7 +333,7 @@ int main(void)
 				com_senddata(SEND_BETA, buf);
 				AC_status=1;
 				}
-				tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 64);
+				tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 72);
 				tft_println("COOL ON ");
 			
 			    
@@ -333,7 +345,7 @@ int main(void)
 					com_senddata(SEND_BETA, buf);
 					AC_status=3;
 				}
-				tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 64);
+				tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 72);
 				tft_println("HEAT ON ");
 				
 			}else{
@@ -342,27 +354,31 @@ int main(void)
 				com_senddata(SEND_BETA, buf);
 				AC_status=0;
 				}
-				tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 64);
+				tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 72);
 				tft_println("ALL OFF ");
 			}
 
 			if(button_was_pressed()){
-				tft_set_cursor(0, options_yloc + 40);
+				tft_set_cursor(0, options_yloc + 48);
 				tft_text_write(' ');
 				menu_state = MAIN_MENU;
 				tft_set_cursor(0, options_yloc + 8 * cur_option);
 			}
 		}
 		else if(menu_state == MANUAL_LIGHT){
-			tft_set_cursor(0, options_yloc + 48);
+			tft_set_cursor(0, options_yloc + 56);
 			tft_println("> ");
-			tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 48);
+			tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 56);
 			uint8_t changed = 0;
 			if (new_encoder_val > last_encoder_val) {
+				smart_mode = 0;
+				smart_state_changed = 1;
 				changed = 1;
 				manual_light++;
 
 			} else if (new_encoder_val < last_encoder_val) {
+				smart_mode = 0;
+				smart_state_changed = 1;
 				changed = 1;
 				manual_light--;
 			}
@@ -390,17 +406,19 @@ int main(void)
 				}
 			}
 			if(button_was_pressed()){
-				tft_set_cursor(0, options_yloc + 48);
+				tft_set_cursor(0, options_yloc + 56);
 				tft_text_write(' ');
 				menu_state = MAIN_MENU;
 				tft_set_cursor(0, options_yloc + 8 * cur_option);
 			}	
 		}
 		else if(menu_state == MANUAL_BLIND){
-			tft_set_cursor(0, options_yloc + 56);
+			tft_set_cursor(0, options_yloc + 64);
 			tft_println("> ");
-			tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 56);
+			tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 64);
 			if(new_encoder_val != last_encoder_val){
+				smart_mode = 0;
+				smart_state_changed = 1;
 				manual_blind = !manual_blind;
 				if(manual_blind){
 					tft_println("UP  ");
@@ -416,7 +434,7 @@ int main(void)
 				}
 			}
 			if(button_was_pressed()){
-				tft_set_cursor(0, options_yloc + 56);
+				tft_set_cursor(0, options_yloc + 64);
 				tft_text_write(' ');
 				menu_state = MAIN_MENU;
 				tft_set_cursor(0, options_yloc + 8 * cur_option);
@@ -424,15 +442,19 @@ int main(void)
 			
 		}
 		else if(menu_state == MANUAL_HVAC){
-			tft_set_cursor(0, options_yloc + 64);
+			tft_set_cursor(0, options_yloc + 72);
 			tft_println("> ");
-			tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 64);
+			tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 72);
 			uint8_t changed = 0;
 			if (new_encoder_val > last_encoder_val) {
+				smart_mode = 0;
+				smart_state_changed = 1;
 				changed = 1;
 				manual_hvac++;
 
 			} else if (new_encoder_val < last_encoder_val) {
+				smart_mode = 0;
+				smart_state_changed = 1;
 				changed = 1;
 				manual_hvac--;
 			}
@@ -493,8 +515,7 @@ int main(void)
 				}
 			}
 			if(button_was_pressed()){
-				tft_set_cursor(0, options_yloc + 64
-);
+				tft_set_cursor(0, options_yloc + 72);
 				tft_text_write(' ');
 				menu_state = MAIN_MENU;
 				tft_set_cursor(0, options_yloc + 8 * cur_option);
@@ -503,6 +524,19 @@ int main(void)
 		ideal_temp=(double) manual_temp;
 		last_encoder_val = new_encoder_val;
 		
+		if(smart_mode){
+			if(smart_state_changed){
+				tft_set_cursor(8 * 2, options_yloc + 32);
+				tft_printf("%s ON", SMART_MODE_STRING);
+			}
+			smart_control(temp_val, pd_val, day_night_val, motion_on);
+		}
+		else{
+			if(smart_state_changed){
+				tft_set_cursor(8 * 2, options_yloc + 32);
+				tft_printf("%s OFF", SMART_MODE_STRING);
+			}
+		}
 
 		/*
 		tft_set_cursor(half_width, 8);
