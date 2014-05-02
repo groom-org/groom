@@ -13,10 +13,10 @@
 #define Target_brightness 75
 
 
-uint8_t Blind_status;     // 1 up   0 down
-uint8_t AC_status;      // 1 heat on 2 heat off  3 cool on 4 cool off 5 everything off
-uint8_t Light_status; // 2 full 1 half 0 off
-uint8_t Time_status; //1 for daytime, 0 night
+uint8_t Blind_status = 0;     // 1 up   0 down
+uint8_t AC_status = 5;      // 1 heat on 2 heat off  3 cool on 4 cool off 5 everything off
+uint8_t Light_status = 0; // 2 full 1 half 0 off
+uint8_t Time_status = 1; //1 for daytime, 0 night
 int Temperature;
 
 int temp_parse(char * temp){
@@ -62,7 +62,7 @@ void smart_control(int temp, int pd, uint8_t day_night, int motion){
 		AC_status=5;	//update to say everything off
 	}	
 	if (day_night) {	//if it is daytime
-		if (~Blind_status) {		//if blinds down, put up
+		if (!Blind_status) {		//if blinds down, put up
 			char buf[2];
 			sprintf(buf, "%c\r", BLINDS_UP);
 			com_senddata(SEND_BETA, buf);
@@ -81,20 +81,20 @@ void smart_control(int temp, int pd, uint8_t day_night, int motion){
 			Light_status=2;
 		}	
 	}
-	if (~day_night) {	//if it is nighttime
+	if (!day_night) {	//if it is nighttime
 		if (Blind_status) {		//if blinds up, put down
 			char buf[2];
 			sprintf(buf, "%c\r", BLINDS_DOWN);
 			com_senddata(SEND_BETA, buf);
 			Blind_status=0;
 		}		
-		if (~Light_status&& motion) {	//if lights off & motion detected
+		if (!Light_status&& motion) {	//if lights off & motion detected
 			char buf[2];
 			sprintf(buf, "%c\r", LIGHTS_HALF);
 			com_senddata(SEND_BETA, buf);
 			Light_status=1; //update to say lights half on
 		}	
-		if (Light_status!=0 && ~motion) {  //if lights on and no motion
+		if (Light_status!=0 && !motion) {  //if lights on and no motion
 			char buf[2];
 			sprintf(buf, "%c\r", LIGHTS_OFF);
 			com_senddata(SEND_BETA, buf);
