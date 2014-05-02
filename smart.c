@@ -1,40 +1,33 @@
+
+#include <avr/io.h>
+#include <stdio.h>
+#include <util/delay.h>
+#include <avr/interrupt.h>
 #include <stdlib.h>
-#include <cmath.h>
-#include "groom/rtc.h"
+#include <string.h>
+#include "groom/usart.h"
 #include "groom/com.h"
+#include "groom/rtc.h"
+#include "groom/tft.h"
 
 
-#define Target_temp 22
-#define Target_brightness 75
+#define Target_temp 31
+#define Target_brightness 50
 
 
-uint8_t Blind_status;     // 1 up   0 down
-uint8_t AC_status;      // 1 heat on 2 heat off  3 cool on 4 cool off
-uint8_t Light_status; // 2 full 1 half 0 off
-uint8_t Time_status; //1 for daytime, 0 night
-int Temperature;
+
+uint8_t Blind_status=0;     // 1 up   0 down
+uint8_t AC_status=0;      // 1 heat on 2 heat off  3 cool on 4 cool off 5 everything off
+uint8_t Light_status=0; // 2 full 1 half 0 off
+uint8_t Time_status=0; //1 for daytime, 0 night
+
 
 int temp_parse(char * temp){
-
-	int i=0,j=0;
-	int temp_num=0;
-	while(temp[i]!='.'){
-		i++;	
-	}
-
-	if(i==0 || i==1 || i>=4)
-		return 0;
-	if(i==2){
-		return (int)temp[0];
-	}
-	if(i==3){
-		return (int)temp[0]*10+temp[1];
-	}
-
+	return atoi(temp);
 }
 
 int pd_parse(char* pd){
-	return atoi(*pd);
+	return atoi(pd);
 }
 
 int day_parse(){
@@ -54,78 +47,90 @@ int day_parse(){
 //uint8_t AC_status;      // 1 heat on 2 heat off  3 cool on 4 cool off
 void smart_control(int temp, int pd, uint8_t day_night, int motion){
 
-	if(breakcommand){
-		return;
+ 
+    if(Light_status==0){
+			draw_light_off();
+		}else{
+			draw_light_on();
+		}
+   
+	if ((Target_temp-1)>temp) {	//if too cold, turn on heat
+		char buf[5];
+		if(AC_status!=1){
+		sprintf(buf, "%c%c%c\r", COOL_OFF, FAN_ON, HEAT_ON);
+		com_senddata(SEND_BETA, buf);
+		AC_status=1;	//update to say heat on
+
+		}
+	}
+	else if ((Target_temp+1)<temp) { //if too hot, turn on air
+		char buf[5];
+		if(AC_status!=3){
+		sprintf(buf, "%c%c%c\r", HEAT_OFF, FAN_ON, COOL_ON);
+		com_senddata(SEND_BETA, buf);
+		AC_status=3;	//update to say air on
+		}
 	}	
-
-	if(day_night){
-
-
-
-
-
-
-	}else{
-
-
-
-
-
-
-	}
-
-
-
-
-}
-
-
-
-if (day_night) {	//if it is daytime
-		if (Target_temp>temp) {	//if too cold, turn on heat
-			com_senddata('6', 'c');
-			com_senddata('6', 'F');
-			com_senddata('6', 'H');
-			AC_status=1;	//update to say heat on
-		}
-		if (Target_temp<temp) { //if too hot, turn on air
-			com_senddata('6', 'h');
-			com_senddata('6', 'F');
-			com_senddata('6', 'C');
-			AC_status=3;	//update to say air on
-		}	
-		if (~Blind_status) {		//if blinds down, put up
-			com_senddata('6', 'U');	
+	else  { //perfect temperature, turn off
+		char buf[5];
+		sprintf(buf, "%c%c%c\r", HEAT_OFF, FAN_OFF, COOL_OFF);
+		com_senddata(SEND_BETA, buf);
+		AC_status=5;	//update to say everything off
+	}	
+	
+	_delay_ms(200);
+	
+	if (day_night) {	//if it is daytime
+		if (!Blind_status) {		//if blinds down, put up
+			char buf[2];
+			if(Blind_status!=1){
+			sprintf(buf, "%c\r", BLINDS_UP);
+			com_senddata(SEND_BETA, buf);
 			Blind_status=1;
-		}		
-		if (Light_status!=2) {	//if lights not full, turn lights on
-			com_senddata('6', 'L');
-			Light_stutus=2;
-		}	
+			}
+		}		// Target_brightness
+		_delay_ms(200);
 		
+		if (pd>=Target_brightness) {	//if outside light enough, lights off
+			char buf[2];
+			sprintf(buf, "%c\r", LIGHTS_OFF);
+			com_senddata(SEND_BETA, buf);
+			Light_status=0;
+		}else if (pd<Target_brightness ) { //if dark & blinds on turn on lights
+			char buf[2];
+			if(Light_status!=2){
+			sprintf(buf, "%c\r", LIGHTS_FULL);
+			com_senddata(SEND_BETA, buf);
+			Light_status=2;
+			}
+
+		}	
+		_delay_ms(200);
 	}
-	if (~day_night) {	//if it is nighttime
-		if (Target_temp>temp) {	//if too cold, turn on heat
-			com_senddata('6', 'c');
-			com_senddata('6', 'F');
-			com_senddata('6', 'H');
-			AC_status=1;	//update to say heat on
-		}
-		if (Target_temp<temp) { //if too hot, turn on air
-			com_senddata('6', 'h');
-			com_senddata('6', 'F');
-			com_senddata('6', 'C');
-			AC_status=3;	//update to say air on
-		}	
+	if (!day_night) {	//if it is nighttime
 		if (Blind_status) {		//if blinds up, put down
-			com_senddata('6', 'D');	
+			char buf[2];
+			sprintf(buf, "%c\r", BLINDS_DOWN);
+			com_senddata(SEND_BETA, buf);
 			Blind_status=0;
-		}		
-		if (~Light_status&& motion) {	//if lights off & motion detected
-			com_senddata('6', 'i');
-			Light_status=1; //update to say lights half on
+
 		}	
-		if (Light_status!=0 && ~motion) {  //if lights on and no motion
-			com_senddate('6','l');
+		_delay_ms(200);	
+		
+			
+		if ((!Light_status)&& motion) {	//if lights off & motion detected
+
+			char buf[2];
+			sprintf(buf, "%c\r", LIGHTS_HALF);
+			com_senddata(SEND_BETA, buf);
+			Light_status=1; //update to say lights half on
+
+		}	
+		if (Light_status!=0 && !motion) {  //if lights on and no motion
+			char buf[2];
+			sprintf(buf, "%c\r", LIGHTS_OFF);
+			com_senddata(SEND_BETA, buf);
 			Light_status=0; //update to say lights off
+		}	
+		_delay_ms(200);
 	}	

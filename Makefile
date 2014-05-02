@@ -33,6 +33,7 @@ OBJECTS_MASTER   += i2c_master.o
 OBJECTS_MASTER   += rtc_master.o
 OBJECTS_MASTER   += com_master.o
 OBJECTS_MASTER   += usart_mux_master.o
+OBJECTS_MASTER   += smart.o
 
 OBJECTS_ALPHA     = groom_alpha.o
 OBJECTS_ALPHA    += usart_alpha.o

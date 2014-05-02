@@ -51,7 +51,7 @@ uint8_t rtc_run(void)
 {
 	uint8_t buf[] = {
 		0x30, // seconds
-		0x29, // minutes
+		0x55, // minutes
 		0x18, // hours
 		0x06, // day
 		0x25, // date

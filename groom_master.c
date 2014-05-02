@@ -13,11 +13,13 @@
 #include "groom/rtc.h"
 #include "groom/usart_mux.h"
 #include "groom/com.h"
+#include "groom/smart.h"
 
 #define TEMP_SET_STRING "Temperature:"
 #define LIGHT_SET_STRING "Lights:"
 #define BLIND_SET_STRING "Blinds:"
 #define HVAC_SET_STRING "HVAC:"
+#define SMART_MODE_STRING "Smart Mode:"
 #define MAIN_MENU 0
 #define MANUAL_TEMP 1
 #define MANUAL_LIGHT 2
@@ -77,6 +79,7 @@ char *get_s1_status();
 char *get_s2_status();
 char *get_photodiode();
 char *get_motion();
+char *return_temp_val();
 void init_status(struct status_item *items, size_t n, int x, int y);
 void update_status(struct status_item *items, size_t n, int x, int y);
 int analyze_temp(double temp, double ideal);
@@ -92,9 +95,17 @@ double ideal_temp=0;
 uint8_t motion_on=0;
 uint8_t blindcontrol=0;
 uint8_t blindcontrol_new=0;
-uint8_t motion_val=0;
 uint8_t tempcontrol=2;
 uint8_t temp_control_new=2;
+int temp_val=0;
+uint8_t day_night_val=0;
+int pd_val=0;
+uint8_t smart_mode=0;
+
+
+uint8_t AC_status_2=0; //0 off , 1 cool on, 2 cool off, 3 heat on, 4 heat off
+uint8_t FAN_status_2=0;
+
 
 int main(void)
 {
@@ -122,11 +133,9 @@ int main(void)
 	tft_set_text_size(1);
 	tft_set_clear_newline(0);
 
+	draw_logotext();
 	/* uncomment to set time */
-	/*
 	uint8_t rtc_run_res = rtc_run();
-	usart_printf("rct_run res: 0x%.2x", rtc_run_res);
-	*/
 
 	sei();
 	
@@ -135,9 +144,9 @@ int main(void)
 
 	struct status_item mitems[] = {
 		{
-			"SPSR",
-			"0x%.2x",
-			get_spsr,
+			"Temp",
+			"%s",
+			return_temp_val,
 			NULL
 		},
 		{
@@ -219,39 +228,45 @@ int main(void)
 	tft_println("Set Blinds");
 	tft_set_cursor(8 * 2, options_yloc + 24);
 	tft_println("Set HVAC");
-	tft_set_cursor(0, options_yloc + 32);
+	tft_set_cursor(8 * 2, options_yloc + 32);
+	tft_printf("%s OFF", SMART_MODE_STRING);
+	tft_set_cursor(0, options_yloc + 40);
 	for (int i = 0; i < ILI9341_TFTWIDTH / 6; i++) {
 		tft_text_write('=');
 	}
-	uint8_t manual_temp = 70;
-	tft_set_cursor(8 * 2, options_yloc + 40);
-	tft_println(TEMP_SET_STRING);
-	tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 40);
-	tft_println("70");
-	uint8_t manual_light = 1; //1 HI, 0 OFF, 2 LOW
+	uint8_t manual_temp = 22;
 	tft_set_cursor(8 * 2, options_yloc + 48);
-	tft_println(LIGHT_SET_STRING);
+	tft_println(TEMP_SET_STRING);
 	tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 48);
+	tft_println("22");
+	uint8_t manual_light = 1; //1 HI, 0 OFF, 2 LOW
+	tft_set_cursor(8 * 2, options_yloc + 56);
+	tft_println(LIGHT_SET_STRING);
+	tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 56);
 	tft_println("ON");
 	uint8_t manual_blind = 0; //0 DOWN, 1 UP
-	tft_set_cursor(8 * 2, options_yloc + 56);
+	tft_set_cursor(8 * 2, options_yloc + 64);
 	tft_println(BLIND_SET_STRING);
-	tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 56);
+	tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 64);
 	tft_println("DOWN");
 	uint8_t manual_hvac = 4; //0 H_ON, 1 H_OFF, 2 C_ON, 3 C_OFF, 4 F_ON, 5 F_OFF
-	tft_set_cursor(8 * 2, options_yloc + 64);
+	tft_set_cursor(8 * 2, options_yloc + 72);
 	tft_println(HVAC_SET_STRING);
-	tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 64);
+	tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 72);
 	tft_println("FAN ON");
 
 	init_status(mitems, nitems, 0, 0);
 
 	int cur_option = 0;
-	int num_options = 4;
+	int num_options = 5;
 	int last_encoder_val = encoder_val();
 	int menu_state = MAIN_MENU;
+	uint8_t counter = 0;
 
 	for(;;) {
+	
+		
+		uint8_t smart_state_changed = 0;
 		update_status(mitems, nitems, 0, 0);
 		int new_encoder_val = encoder_val();
 		if(menu_state == MAIN_MENU){
@@ -288,42 +303,82 @@ int main(void)
 				case 3:
 					menu_state = MANUAL_HVAC;
 					break;
+				case 4:
+					smart_mode = 1;
+					smart_state_changed = 1;
+					break;
 			}
 			}
 		}
 		else if(menu_state == MANUAL_TEMP){
-			tft_set_cursor(0, options_yloc + 40);
+			tft_set_cursor(0, options_yloc + 48);
 			tft_println("> ");
-			tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 40);
+			tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 48);
 			if (new_encoder_val > last_encoder_val) {
+				smart_mode = 0;
+				smart_state_changed = 1;
 				manual_temp++;
 				tft_printf("%d ", manual_temp);
 			} else if (new_encoder_val < last_encoder_val) {
+				smart_mode = 0;
+				smart_state_changed = 1;
 				manual_temp--;
 				tft_printf("%d ", manual_temp);
 			}
-			//////
-			//send command to board alpha
+			char buf[3];
+			if(manual_temp < return_temp_val() - 2){
+			
+			    if(AC_status_2!=1){
+				sprintf(buf, "%c%c\r", HEAT_OFF, COOL_ON);
+				com_senddata(SEND_BETA, buf);
+				AC_status_2=1;
+				}
+				tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 72);
+				tft_println("COOL ON ");
+			
+			    
+			}
+			else if(manual_temp > return_temp_val() + 2){
+			
+				if(AC_status_2!=3){
+					sprintf(buf, "%c%c\r", COOL_OFF, HEAT_ON);
+					com_senddata(SEND_BETA, buf);
+					AC_status_2=3;
+				}
+				tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 72);
+				tft_println("HEAT ON ");
+				
+			}else{
+				if(AC_status_2!=0){
+				sprintf(buf, "%c%c\r", HEAT_OFF, COOL_OFF);
+				com_senddata(SEND_BETA, buf);
+				AC_status_2=0;
+				}
+				tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 72);
+				tft_println("ALL OFF ");
+			}
 
-			//////
-			//last_enc_val = new_enc_val;
 			if(button_was_pressed()){
-				tft_set_cursor(0, options_yloc + 40);
+				tft_set_cursor(0, options_yloc + 48);
 				tft_text_write(' ');
 				menu_state = MAIN_MENU;
 				tft_set_cursor(0, options_yloc + 8 * cur_option);
 			}
 		}
 		else if(menu_state == MANUAL_LIGHT){
-			tft_set_cursor(0, options_yloc + 48);
+			tft_set_cursor(0, options_yloc + 56);
 			tft_println("> ");
-			tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 48);
+			tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 56);
 			uint8_t changed = 0;
 			if (new_encoder_val > last_encoder_val) {
+				smart_mode = 0;
+				smart_state_changed = 1;
 				changed = 1;
 				manual_light++;
 
 			} else if (new_encoder_val < last_encoder_val) {
+				smart_mode = 0;
+				smart_state_changed = 1;
 				changed = 1;
 				manual_light--;
 			}
@@ -351,17 +406,19 @@ int main(void)
 				}
 			}
 			if(button_was_pressed()){
-				tft_set_cursor(0, options_yloc + 48);
+				tft_set_cursor(0, options_yloc + 56);
 				tft_text_write(' ');
 				menu_state = MAIN_MENU;
 				tft_set_cursor(0, options_yloc + 8 * cur_option);
 			}	
 		}
 		else if(menu_state == MANUAL_BLIND){
-			tft_set_cursor(0, options_yloc + 56);
+			tft_set_cursor(0, options_yloc + 64);
 			tft_println("> ");
-			tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 56);
+			tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 64);
 			if(new_encoder_val != last_encoder_val){
+				smart_mode = 0;
+				smart_state_changed = 1;
 				manual_blind = !manual_blind;
 				if(manual_blind){
 					tft_println("UP  ");
@@ -377,7 +434,7 @@ int main(void)
 				}
 			}
 			if(button_was_pressed()){
-				tft_set_cursor(0, options_yloc + 56);
+				tft_set_cursor(0, options_yloc + 64);
 				tft_text_write(' ');
 				menu_state = MAIN_MENU;
 				tft_set_cursor(0, options_yloc + 8 * cur_option);
@@ -385,15 +442,19 @@ int main(void)
 			
 		}
 		else if(menu_state == MANUAL_HVAC){
-			tft_set_cursor(0, options_yloc + 64);
+			tft_set_cursor(0, options_yloc + 72);
 			tft_println("> ");
-			tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 64);
+			tft_set_cursor(ILI9341_TFTWIDTH / 2, options_yloc + 72);
 			uint8_t changed = 0;
 			if (new_encoder_val > last_encoder_val) {
+				smart_mode = 0;
+				smart_state_changed = 1;
 				changed = 1;
 				manual_hvac++;
 
 			} else if (new_encoder_val < last_encoder_val) {
+				smart_mode = 0;
+				smart_state_changed = 1;
 				changed = 1;
 				manual_hvac--;
 			}
@@ -402,42 +463,59 @@ int main(void)
 				char buf[2];
 				switch(manual_hvac){
 				case 0:
-					tft_println("HEAT ON ");
-					sprintf(buf, "%c\r", HEAT_ON);
-					com_senddata(SEND_BETA, buf);
+					if(AC_status_2!=3){
+						tft_println("HEAT ON ");
+						sprintf(buf, "%c\r", HEAT_ON);
+						com_senddata(SEND_BETA, buf);
+						AC_status_2=3;
+					}
 					break;
 				case 1:
-					tft_println("HEAT OFF");
-					sprintf(buf, "%c\r", HEAT_OFF);
-					com_senddata(SEND_BETA, buf);
+					if(AC_status_2!=4){
+						tft_println("HEAT OFF");
+						sprintf(buf, "%c\r", HEAT_OFF);
+						com_senddata(SEND_BETA, buf);
+						AC_status_2=4;
+					}
 					break;
 				case 2:
+					if(AC_status_2!=1){
 					tft_println("COOL ON ");
 					sprintf(buf, "%c\r", COOL_ON);
 					com_senddata(SEND_BETA, buf);
+					AC_status_2=1;
+					}
 					break;
 				case 3:
+					if(AC_status_2!=2){
 					tft_println("COOL OFF");
 					sprintf(buf, "%c\r", COOL_OFF);
 					com_senddata(SEND_BETA, buf);
+					AC_status_2=2;
+					}
 					break;
 				case 4:
+					if(FAN_status_2!=1){
 					tft_println("FAN ON  ");
 					sprintf(buf, "%c\r", FAN_ON);
 					com_senddata(SEND_BETA, buf);
+					FAN_status_2=1;
+					}
 					break;
 				case 5:
+					if(FAN_status_2!=0){
 					tft_println("FAN OFF ");
 					sprintf(buf, "%c\r", FAN_OFF);
 					com_senddata(SEND_BETA, buf);
+					FAN_status_2=0;
+					}
 					break;
 				default:
 					break;
 				}
 			}
 			if(button_was_pressed()){
-				tft_set_cursor(0, options_yloc + 64
-);
+				tft_set_cursor(0, options_yloc + 72);
 				tft_text_write(' ');
 				menu_state = MAIN_MENU;
 				tft_set_cursor(0, options_yloc + 8 * cur_option);
@@ -446,7 +524,22 @@ int main(void)
 		ideal_temp=(double) manual_temp;
 		last_encoder_val = new_encoder_val;
 		
-
+		if(smart_mode){
+			if(smart_state_changed){
+				tft_set_cursor(8 * 2, options_yloc + 32);
+				tft_printf("%s ON ", SMART_MODE_STRING);
+			}
+			if(counter % 5 == 0 && temp_hb && pd_hb){ //both slaves are active
+				smart_control(temp_val, pd_val, day_night_val, motion_on);
+			}
+		}
+		else{
+			if(smart_state_changed){
+				tft_set_cursor(8 * 2, options_yloc + 32);
+				tft_printf("%s OFF", SMART_MODE_STRING);
+			}
+		}
+		counter++;
 		/*
 		tft_set_cursor(half_width, 8);
 		tft_printf("%d\n", get_temp());
@@ -526,10 +619,17 @@ char *get_temp()
 	if (temp_hb) {
 		char *val = com_requestdata('3');
 		strcpy(buf, val);
+		temp_val=temp_parse(val);
 		return buf;
 	} else {
 		return buf;
 	}
+}
+
+char * return_temp_val(){
+	static char temp[30];
+	sprintf(temp,"%d pd:%d day:%d",temp_val,pd_val,day_night_val);
+	return temp;
 }
 
 char *get_photodiode()
@@ -547,6 +647,7 @@ char *get_photodiode()
 	if (pd_hb) {
 		char *val = com_requestdata('4');
 		strcpy(buf, val);
+		pd_val = pd_parse(val);
 		return buf;
 	} else {
 		return buf;
@@ -580,6 +681,7 @@ char *get_rtc()
 	static char buf[20];
 	struct rtc_time t;
 	uint8_t res = rtc_get_time(&t);
+	
 	if (res) {
 		sprintf(buf, "err: 0x%.2x", res);
 		return buf;
@@ -592,6 +694,12 @@ char *get_rtc()
 	        t.minutes,
 	        t.seconds);
 
+	if(t.hours>6 && t.hours<19){
+		day_night_val=1;
+	}else{
+		day_night_val=0;
+	}
+	
 	return buf;
 }
 
