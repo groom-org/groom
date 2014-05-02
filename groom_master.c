@@ -305,7 +305,7 @@ int main(void)
 					break;
 				case 4:
 					smart_mode = 1;
-					smart_state_changed;
+					smart_state_changed = 1;
 					break;
 			}
 			}
