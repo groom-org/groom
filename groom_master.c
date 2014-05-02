@@ -100,7 +100,7 @@ uint8_t temp_control_new=2;
 int temp_val=0;
 uint8_t day_night_val=0;
 int pd_val=0;
-uint8_t smart_mode=1;
+uint8_t smart_mode=0;
 
 
 uint8_t AC_status=0; //0 off , 1 cool on, 2 cool off, 3 heat on, 4 heat off
@@ -232,7 +232,7 @@ int main(void)
 	tft_set_cursor(8 * 2, options_yloc + 24);
 	tft_println("Set HVAC");
 	tft_set_cursor(8 * 2, options_yloc + 32);
-	tft_printf("%s ON", SMART_MODE_STRING);
+	tft_printf("%s OFF", SMART_MODE_STRING);
 	tft_set_cursor(0, options_yloc + 40);
 	for (int i = 0; i < ILI9341_TFTWIDTH / 6; i++) {
 		tft_text_write('=');
@@ -533,7 +533,7 @@ int main(void)
 		if(smart_mode){
 			if(smart_state_changed){
 				tft_set_cursor(8 * 2, options_yloc + 32);
-				tft_printf("%s ON", SMART_MODE_STRING);
+				tft_printf("%s ON ", SMART_MODE_STRING);
 			}
 			smart_control(temp_val, pd_val, day_night_val, motion_on);
 		}
