@@ -14,7 +14,7 @@
 
 
 uint8_t Blind_status;     // 1 up   0 down
-uint8_t AC_status;      // 1 heat on 2 heat off  3 cool on 4 cool off
+uint8_t AC_status;      // 1 heat on 2 heat off  3 cool on 4 cool off 5 everything off
 uint8_t Light_status; // 2 full 1 half 0 off
 uint8_t Time_status; //1 for daytime, 0 night
 int Temperature;
@@ -49,11 +49,17 @@ void smart_control(int temp, int pd, uint8_t day_night, int motion){
 		com_senddata(SEND_BETA, buf);
 		AC_status=1;	//update to say heat on
 	}
-	if ((Target_temp+1)<temp) { //if too hot, turn on air
+	else if ((Target_temp+1)<temp) { //if too hot, turn on air
 		char buf[5];
 		sprintf(buf, "%c%c%c\r", HEAT_OFF, FAN_ON, COOL_ON);
 		com_senddata(SEND_BETA, buf);
 		AC_status=3;	//update to say air on
+	}	
+	else  { //perfect temperature, turn off
+		char buf[5];
+		sprintf(buf, "%c%c%c\r", HEAT_OFF, FAN_OFF, COOL_OFF);
+		com_senddata(SEND_BETA, buf);
+		AC_status=5;	//update to say everything off
 	}	
 	if (day_night) {	//if it is daytime
 		if (~Blind_status) {		//if blinds down, put up
@@ -61,13 +67,20 @@ void smart_control(int temp, int pd, uint8_t day_night, int motion){
 			sprintf(buf, "%c\r", BLINDS_UP);
 			com_senddata(SEND_BETA, buf);
 			Blind_status=1;
-		}		
-		if (Light_status!=2) {	//if lights not full, turn lights on
+		}		// Target_brightness
+		if (pd>=Target_brightness) {	//if outside light enough, lights off
+			char buf[2];
+			sprintf(buf, "%c\r", LIGHTS_OFF);
+			com_senddata(SEND_BETA, buf);
+			Light_status=2;
+		}	
+		if (pd<Target_brightness) { //if dark & blinds on turn on lights
 			char buf[2];
 			sprintf(buf, "%c\r", LIGHTS_FULL);
 			com_senddata(SEND_BETA, buf);
 			Light_status=2;
 		}	
+		
 		
 	}
 	if (~day_night) {	//if it is nighttime
