@@ -42,106 +42,106 @@ void tft_init(void)
 	tft_data(0x80);
 	tft_data(0x02);
 
-	tft_command(0xCF);  
-	tft_data(0x00); 
-	tft_data(0XC1); 
-	tft_data(0X30); 
+	tft_command(0xCF);
+	tft_data(0x00);
+	tft_data(0XC1);
+	tft_data(0X30);
 
-	tft_command(0xED);  
-	tft_data(0x64); 
-	tft_data(0x03); 
-	tft_data(0X12); 
-	tft_data(0X81); 
+	tft_command(0xED);
+	tft_data(0x64);
+	tft_data(0x03);
+	tft_data(0X12);
+	tft_data(0X81);
 
-	tft_command(0xE8);  
-	tft_data(0x85); 
-	tft_data(0x00); 
-	tft_data(0x78); 
+	tft_command(0xE8);
+	tft_data(0x85);
+	tft_data(0x00);
+	tft_data(0x78);
 
-	tft_command(0xCB);  
-	tft_data(0x39); 
-	tft_data(0x2C); 
-	tft_data(0x00); 
-	tft_data(0x34); 
-	tft_data(0x02); 
+	tft_command(0xCB);
+	tft_data(0x39);
+	tft_data(0x2C);
+	tft_data(0x00);
+	tft_data(0x34);
+	tft_data(0x02);
 
-	tft_command(0xF7);  
-	tft_data(0x20); 
+	tft_command(0xF7);
+	tft_data(0x20);
 
-	tft_command(0xEA);  
-	tft_data(0x00); 
-	tft_data(0x00); 
+	tft_command(0xEA);
+	tft_data(0x00);
+	tft_data(0x00);
 
 	tft_command(ILI9341_PWCTR1);    //Power control
-	tft_data(0x23);   //VRH[5:0] 
+	tft_data(0x23);   //VRH[5:0]
 
-	tft_command(ILI9341_PWCTR2);    //Power control 
-	tft_data(0x10);   //SAP[2:0];BT[3:0] 
+	tft_command(ILI9341_PWCTR2);    //Power control
+	tft_data(0x10);   //SAP[2:0];BT[3:0]
 
-	tft_command(ILI9341_VMCTR1);    //VCM control 
+	tft_command(ILI9341_VMCTR1);    //VCM control
 	tft_data(0x3e); //¶Ô±È¶Èµ÷½Ú
-	tft_data(0x28); 
-  
-	tft_command(ILI9341_VMCTR2);    //VCM control2 
+	tft_data(0x28);
+
+	tft_command(ILI9341_VMCTR2);    //VCM control2
 	tft_data(0x86);  //--
 
-	tft_command(ILI9341_MADCTL);    // Memory Access Control 
+	tft_command(ILI9341_MADCTL);    // Memory Access Control
 	tft_data(0x48);
 
-	tft_command(ILI9341_PIXFMT);    
-	tft_data(0x55); 
-  
-	tft_command(ILI9341_FRMCTR1);    
-	tft_data(0x00);  
-	tft_data(0x18); 
+	tft_command(ILI9341_PIXFMT);
+	tft_data(0x55);
 
-	tft_command(ILI9341_DFUNCTR);    // Display Function Control 
-	tft_data(0x08); 
+	tft_command(ILI9341_FRMCTR1);
+	tft_data(0x00);
+	tft_data(0x18);
+
+	tft_command(ILI9341_DFUNCTR);    // Display Function Control
+	tft_data(0x08);
 	tft_data(0x82);
-	tft_data(0x27);  
+	tft_data(0x27);
 
-	tft_command(0xF2);    // 3Gamma Function Disable 
-	tft_data(0x00); 
+	tft_command(0xF2);    // 3Gamma Function Disable
+	tft_data(0x00);
 
-	tft_command(ILI9341_GAMMASET);    //Gamma curve selected 
-	tft_data(0x01); 
+	tft_command(ILI9341_GAMMASET);    //Gamma curve selected
+	tft_data(0x01);
 
-	tft_command(ILI9341_GMCTRP1);    //Set Gamma 
-	tft_data(0x0F); 
-	tft_data(0x31); 
-	tft_data(0x2B); 
-	tft_data(0x0C); 
-	tft_data(0x0E); 
-	tft_data(0x08); 
-	tft_data(0x4E); 
-	tft_data(0xF1); 
-	tft_data(0x37); 
-	tft_data(0x07); 
-	tft_data(0x10); 
-	tft_data(0x03); 
-	tft_data(0x0E); 
-	tft_data(0x09); 
-	tft_data(0x00); 
-  
-	tft_command(ILI9341_GMCTRN1);    //Set Gamma 
-	tft_data(0x00); 
-	tft_data(0x0E); 
-	tft_data(0x14); 
-	tft_data(0x03); 
-	tft_data(0x11); 
-	tft_data(0x07); 
-	tft_data(0x31); 
-	tft_data(0xC1); 
-	tft_data(0x48); 
-	tft_data(0x08); 
-	tft_data(0x0F); 
-	tft_data(0x0C); 
-	tft_data(0x31); 
-	tft_data(0x36); 
-	tft_data(0x0F); 
+	tft_command(ILI9341_GMCTRP1);    //Set Gamma
+	tft_data(0x0F);
+	tft_data(0x31);
+	tft_data(0x2B);
+	tft_data(0x0C);
+	tft_data(0x0E);
+	tft_data(0x08);
+	tft_data(0x4E);
+	tft_data(0xF1);
+	tft_data(0x37);
+	tft_data(0x07);
+	tft_data(0x10);
+	tft_data(0x03);
+	tft_data(0x0E);
+	tft_data(0x09);
+	tft_data(0x00);
 
-	tft_command(ILI9341_SLPOUT);    //Exit Sleep 
-	_delay_ms(120); 		
+	tft_command(ILI9341_GMCTRN1);    //Set Gamma
+	tft_data(0x00);
+	tft_data(0x0E);
+	tft_data(0x14);
+	tft_data(0x03);
+	tft_data(0x11);
+	tft_data(0x07);
+	tft_data(0x31);
+	tft_data(0xC1);
+	tft_data(0x48);
+	tft_data(0x08);
+	tft_data(0x0F);
+	tft_data(0x0C);
+	tft_data(0x31);
+	tft_data(0x36);
+	tft_data(0x0F);
+
+	tft_command(ILI9341_SLPOUT);    //Exit Sleep
+	_delay_ms(120);
 	tft_command(ILI9341_DISPON);    //Display on
 }
 
@@ -199,7 +199,7 @@ void tft_set_addr_window(int16_t x0, int16_t y0, int16_t x1, int16_t y1)
 {
 	tft_command(ILI9341_CASET); // Column addr set
 	tft_data(x0 >> 8);
-	tft_data(x0 & 0xFF);     // XSTART 
+	tft_data(x0 & 0xFF);     // XSTART
 	tft_data(x1 >> 8);
 	tft_data(x1 & 0xFF);     // XEND
 
@@ -346,30 +346,40 @@ void tft_draw_char(int16_t x, int16_t y, unsigned char c, uint16_t color, uint16
 		}
 	}
 }
-/*
-void tft_draw_logo(int16_t x, int16_t y)
-{
-	/*
-	tft_begin();
-	tft_set_addr_window(x, y, x + logo_width, y + logo_height);
 
-	tft_data_on();
-	for (int i = 0; i < logo_width * logo_height; i++) {
-		spi_master_shift(logo_data[i] >> 8);
-		spi_master_shift(logo_data[i]);
+int sign(int x) {
+    if (x < 0){
+		return -1;
 	}
-	tft_data_off();
-
-	tft_end();
-	
-
-	for (int x = 0; x < logo_width; x++) {
-		for (int y = 0; y < logo_height; y++) {
-			tft_draw_pixel(x, y, logo_data[x * logo_width + y]);
-		}
+    else{
+		return 1;
 	}
 }
-*/
+
+void tft_draw_line(int xPrev, int yPrev, int x, int y, int16_t color){
+    int x1 = xPrev;
+    int y1 = yPrev;
+    int x2 = x;
+    int y2 = y;
+    int dy = y2 - y1;
+    int dx = x2 - x1;
+
+    if (fabs(dy) > fabs(dx)){
+        for(y = y1; y != y2; y += sign(dy)){
+            x = x1 + (y - y1) * dx/dy;
+			tft_draw_pixel((int)x, (int)y, color);
+        }
+    }
+    else {
+        for (x = x1; x != x2; x += sign(dx)){
+            y = y1 + (x - x1) * dy/dx;
+			tft_draw_pixel((int)x, (int)y, color);
+        }
+    }
+    tft_draw_pixel((int)x2, (int)y2, color);
+
+}
+
 
 void tft_end(void)
 {
