@@ -382,32 +382,32 @@ void tft_draw_line(int xPrev, int yPrev, int x, int y, int16_t color){
 
 void draw_logotext(){
     int x = 10;
-    int y = 10;
+    int y = 200;
     tft_draw_line(x, y, x+50, y, 0x001F);
     tft_draw_line(x, y, x, y+50, 0x001F);
     tft_draw_line(x, y+50, x+50, y+50, 0x001F);
     tft_draw_line(x+50, y+25, x+50, y+50, 0x001F);
     tft_draw_line(x+25, y+25, x+50, y+25, 0x001F);
-    x += 8;
+    x += 58;
     tft_draw_line(x, y, x+50, y, 0xF800);
     tft_draw_line(x, y, x, y+50, 0xF800);
     tft_draw_line(x+50, y, x+50, y+50, 0xF800);
     tft_draw_line(x, y+50, x+50, y+50, 0xF800);
-    x += 8;
+    x += 58;
     tft_draw_line(x, y, x+50, y, 0xFFE0);
     tft_draw_line(x, y, x, y+50, 0xFFE0);
     tft_draw_line(x+50, y, x+50, y+50, 0xFFE0);
     tft_draw_line(x, y+50, x+50, y+50, 0xFFE0);
-    x += 8;
+    x += 58;
     tft_draw_line(x, y, x+50, y, 0x001F);
     tft_draw_line(x, y, x, y+50, 0x001F);
     tft_draw_line(x, y+50, x+50, y+50, 0x001F);
     tft_draw_line(x+50, y+25, x+50, y+50, 0x001F);
     tft_draw_line(x+25, y+25, x+50, y+25, 0x001F);
-    x += 8;
+    x += 58;
     tft_draw_line(x, y, x, y, 0x07E0);
     tft_draw_line(x, y+50, x+30, y+50, 0x07E0);
-    x += 8;
+    x += 33;
     tft_draw_line(x, y, x+50, y, 0xF800);
     tft_draw_line(x, y, x, y+50, 0xF800);
     tft_draw_line(x, y+50, x+50, y+50, 0xF800);
