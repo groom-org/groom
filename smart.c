@@ -68,20 +68,18 @@ void smart_control(int temp, int pd, uint8_t day_night, int motion){
 			com_senddata(SEND_BETA, buf);
 			Blind_status=1;
 		}		// Target_brightness
-		if (pd>=Target_brightness) {	//if outside light enough, lights off
+		if (pd>=Target_brightness && Light_status!=0) {	//if outside light enough, lights off
 			char buf[2];
 			sprintf(buf, "%c\r", LIGHTS_OFF);
 			com_senddata(SEND_BETA, buf);
-			Light_status=2;
+			Light_status=0;
 		}	
-		if (pd<Target_brightness) { //if dark & blinds on turn on lights
+		if (pd<Target_brightness && Light_status!=2) { //if dark & blinds on turn on lights
 			char buf[2];
 			sprintf(buf, "%c\r", LIGHTS_FULL);
 			com_senddata(SEND_BETA, buf);
 			Light_status=2;
 		}	
-		
-		
 	}
 	if (~day_night) {	//if it is nighttime
 		if (Blind_status) {		//if blinds up, put down
