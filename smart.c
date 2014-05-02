@@ -43,13 +43,13 @@ int day_parse(){
 //uint8_t Light_status; // 2 full 1 half 0 off
 //uint8_t AC_status;      // 1 heat on 2 heat off  3 cool on 4 cool off
 void smart_control(int temp, int pd, uint8_t day_night, int motion){
-	if ((Target_temp-5)>temp) {	//if too cold, turn on heat
+	if ((Target_temp-1)>temp) {	//if too cold, turn on heat
 		char buf[5];
 		sprintf(buf, "%c%c%c\r", COOL_OFF, FAN_ON, HEAT_ON);
 		com_senddata(SEND_BETA, buf);
 		AC_status=1;	//update to say heat on
 	}
-	if ((Target_temp+5)<temp) { //if too hot, turn on air
+	if ((Target_temp+1)<temp) { //if too hot, turn on air
 		char buf[5];
 		sprintf(buf, "%c%c%c\r", HEAT_OFF, FAN_ON, COOL_ON);
 		com_senddata(SEND_BETA, buf);
