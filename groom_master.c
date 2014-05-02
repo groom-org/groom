@@ -219,7 +219,7 @@ int main(void)
 	tft_println("Set Blinds");
 	tft_set_cursor(8 * 2, options_yloc + 24);
 	tft_println("Set HVAC");
-	tft_set_cursor(8 * 2, options_yloc + 32);
+	tft_set_cursor(0, options_yloc + 32);
 	for (int i = 0; i < ILI9341_TFTWIDTH / 6; i++) {
 		tft_text_write('=');
 	}
