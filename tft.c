@@ -384,6 +384,10 @@ void draw_logotext(){
     int x = 40;
     int y = 250;
     draw_logo();
+    draw_light_on();
+    draw_light_off();
+    draw_fan_on();
+    draw_fan_off();
     tft_draw_line(x, y, x+45, y, 0x001F);
     tft_draw_line(x, y, x, y+42, 0x001F);
     tft_draw_line(x, y+42, x+42, y+42, 0x001F);
