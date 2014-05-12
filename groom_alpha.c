@@ -1,24 +1,3 @@
-/*************************************************************
- *       at328-0.c - Demonstrate simple I/O functions of ATmega328
- *
- *       Program loops turning PC0 on and off as fast as possible.
- *
- * The program should generate code in the loop consisting of
- *   LOOP:   SBI  PORTC,0        (2 cycles)
- *           CBI  PORTC,0        (2 cycles)
- *           RJMP LOOP           (2 cycles)
- *
- * PC0 will be low for 4 / XTAL freq
- * PC0 will be high for 2 / XTAL freq
- * A 9.8304MHz clock gives a loop period of about 600 nanoseconds.
- *
- * Revision History
- * Date     Author      Description
- * 09/14/12 A. Weber    Initial Release
- * 11/18/13 A. Weber    Renamed for ATmega328P
- * 04/27/14 H. Xiao     Re-designed for slave uP (thermometer and motion sensor)
- *************************************************************/
-
 #include <avr/io.h>
 #include <stdio.h>
 #include <util/delay.h>
@@ -34,21 +13,6 @@ volatile uint8_t StrRxFlag=0;
 volatile char c='0';   //command char
 volatile uint8_t interruptstate=0; //interrupt state
 char buf[256]; //string for thermometer
-
-/* !! This protocol should be used in all uP.
-#define HB_ALPHA '1'
-#define HB_BETA '2'
-#define READ_ALPHA '3'
-#define READ_BETA '4'
-#define SEND_ALPHA '5'
-#define SEND_BETA '6'
-#define ACK 'A'
-#define ACTIVE_RESPONSE 'R'
-#define ACTIVE_RESPONSE_MOTION 'r'
-#define DEFAULT '0' 
-#define COMMAND_MODE 0
-#define TRANSMIT_MODE 1
-*/
 
 // Find divisors for the UART0 and I2C baud rates
 #define FOSC 9830400            // Clock frequency = Oscillator freq.
